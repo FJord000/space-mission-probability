@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Uzay Görevi: Olasılık Macerası</title>
+<style>
+:root{
+  --bg:#060a18;--panel:rgba(16,24,50,.82);--panel2:rgba(28,39,76,.9);--line:rgba(150,170,255,.18);
+  --text:#eef1ff;--muted:#a9b3da;--ok:#3ddc97;--bad:#ff5d6c;--warn:#ffc857;--accent:#7aa2ff;
+  --mars:#e2683c;--shield:#5ec8ff;--part:#ffb454;--star:#ffd166;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{overflow-x:hidden;line-height:1.45}
+#stars{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+#app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:14px 16px 48px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+h1,h2,h3{margin:0;line-height:1.2}
+p{margin:.4em 0}
+.btn{background:linear-gradient(180deg,#9bbcff,#6d93f5);color:#0a1230;font-weight:800;padding:14px 26px;border-radius:14px;font-size:1.08rem;
+  min-height:52px;box-shadow:0 6px 24px rgba(122,162,255,.35),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .1s,filter .2s,box-shadow .2s}
+.btn:hover{filter:brightness(1.08);box-shadow:0 8px 32px rgba(122,162,255,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:rgba(255,255,255,.04);color:var(--text);border:1.5px solid var(--line);box-shadow:none}
+.btn.big{font-size:1.3rem;padding:18px 42px;border-radius:18px}
+.btn.okb{background:linear-gradient(180deg,#6ff0b6,#2fc283);box-shadow:0 6px 24px rgba(61,220,151,.35)}
+.btn.warnb{background:linear-gradient(180deg,#ffe08a,#f5b83d);box-shadow:0 6px 24px rgba(255,200,87,.35)}
+.btn.pulse{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(122,162,255,.35)}50%{box-shadow:0 6px 44px rgba(122,162,255,.8),0 0 0 8px rgba(122,162,255,.12)}}
+.screen{display:none}
+.screen.on{display:block;animation:fade .45s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.5)}70%{transform:scale(1.12)}100%{opacity:1;transform:none}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;backdrop-filter:blur(8px);
+  box-shadow:0 10px 40px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05)}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.center{text-align:center}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.tag.sh{background:rgba(94,200,255,.15);color:var(--shield);border:1px solid rgba(94,200,255,.4)}
+.tag.pt{background:rgba(255,180,84,.15);color:var(--part);border:1px solid rgba(255,180,84,.4)}
+.shake{animation:shakeA .6s}
+@keyframes shakeA{10%,50%,90%{transform:translateX(-7px)}30%,70%{transform:translateX(7px)}}
+
+/* ---------- INTRO ---------- */
+.intro{text-align:center;padding-top:1vh}
+.host3d{position:relative;width:100%;overflow:hidden;background:#000}
+.host3d canvas{display:block;width:100%;height:100%}
+.w3flash{position:absolute;inset:0;background:#fff4e6;opacity:0;pointer-events:none}
+.w3warp{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:6% 16px 7%;opacity:0;pointer-events:none;text-align:center}
+.w3warp .k{font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9fc0ff;font-size:clamp(.8rem,2vw,1.05rem);text-shadow:0 0 12px rgba(120,160,255,.8)}
+.w3warp .t{font-weight:900;color:#fff;font-size:clamp(1.6rem,5vw,3rem);text-shadow:0 0 24px rgba(120,160,255,.9),0 2px 8px rgba(0,0,0,.8)}
+#introHost{height:clamp(200px,36vh,380px);border-radius:26px;margin-bottom:6px;background:transparent;
+  -webkit-mask-image:radial-gradient(ellipse 52% 54% at 50% 50%,#000 62%,transparent 100%);mask-image:radial-gradient(ellipse 52% 54% at 50% 50%,#000 62%,transparent 100%)}
+.credit{font-size:.75rem;color:var(--muted);opacity:.75;margin-top:10px}
+.introlang{display:flex;justify-content:flex-end;margin-bottom:6px}
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.langsw button{padding:9px 14px;font-weight:700;font-size:.9rem;color:var(--muted);min-height:44px}
+.langsw button.sel{background:var(--accent);color:#0a1230}
+.intro h1{font-size:clamp(2rem,5.6vw,3.6rem);letter-spacing:-.5px;background:linear-gradient(90deg,#9fd0ff,#ffffff 45%,#ffb48a);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(159,208,255,.35))}
+.intro .sub{font-size:clamp(1.05rem,2.4vw,1.3rem);color:var(--muted);max-width:660px;margin:10px auto 22px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:840px;margin:0 auto 22px;text-align:left}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;animation:rise .6s both}
+.step:nth-child(2){animation-delay:.1s}.step:nth-child(3){animation-delay:.2s}
+.step b{display:block;font-size:1.05rem;margin-bottom:3px}
+.modes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:6px auto 22px}
+.mode{border:2px solid var(--line);background:var(--panel);border-radius:16px;padding:12px 18px;min-width:250px;text-align:left;transition:border-color .2s,background .2s}
+.mode b{display:block;font-size:1.05rem}
+.mode.sel{border-color:var(--accent);background:rgba(122,162,255,.16);box-shadow:0 0 24px rgba(122,162,255,.25)}
+.standstats{margin-top:22px;font-size:.95rem;color:var(--muted)}
+.standstats b{color:var(--text)}
+.linkbtn{color:var(--muted);text-decoration:underline;font-size:.82rem;padding:6px}
+
+/* ---------- HUD ---------- */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.hud .title{font-weight:800;font-size:1rem;color:var(--muted)}
+.res{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:.98rem}
+.chip .pips{display:inline-flex;gap:3px}
+.chip .pip{width:11px;height:11px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.chip .pip.off{background:transparent;border:1.5px solid currentColor;opacity:.45;box-shadow:none}
+.chip.sh{color:var(--shield)} .chip.pt{color:var(--part)} .chip.sc{color:var(--star)}
+.iconbtn{width:48px;height:48px;border-radius:50%;background:var(--panel);border:1px solid var(--line);font-size:1.1rem}
+.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.22)}}
+
+.track{position:relative;height:60px;margin:2px 6px 10px}
+.track .line{position:absolute;left:28px;right:28px;top:29px;height:3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.28) 0 8px,transparent 8px 14px)}
+.track .fill{position:absolute;left:28px;top:29px;height:3px;background:linear-gradient(90deg,#7aa2ff,#ffb48a);transition:width .8s ease;box-shadow:0 0 10px rgba(122,162,255,.8)}
+.node{position:absolute;top:30px;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;
+  background:var(--panel2);border:2px solid var(--line);transition:border-color .3s,box-shadow .3s}
+.node.done{border-color:var(--ok);box-shadow:0 0 12px rgba(61,220,151,.5)} .node.fail{border-color:var(--bad);box-shadow:0 0 12px rgba(255,93,108,.6)}
+.node.cur{border-color:var(--accent);box-shadow:0 0 0 5px rgba(122,162,255,.2),0 0 16px rgba(122,162,255,.6)}
+.node.hypo{border-style:dashed;border-color:var(--warn)}
+.node.endp{width:44px;height:44px;border:0}
+.node.e{background:radial-gradient(circle at 35% 30%,#9fe0ff,#2a7fd4 50%,#123d7a);box-shadow:0 0 16px rgba(80,160,255,.5)}
+.node.m{background:radial-gradient(circle at 35% 30%,#ffb48a,#e2683c 50%,#7d2a12);box-shadow:0 0 16px rgba(226,104,60,.5)}
+.node .lbl{position:absolute;top:30px;font-size:.7rem;color:var(--muted);white-space:nowrap}
+.ship{position:absolute;top:0;font-size:26px;transform:translateX(-50%) rotate(45deg);transition:left .9s cubic-bezier(.5,.1,.3,1);filter:drop-shadow(0 0 8px rgba(255,200,120,.7));z-index:2}
+.ship.boom{filter:grayscale(1) brightness(.6)}
+
+/* ---------- STAGE ---------- */
+.scenewrap{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line);box-shadow:0 14px 50px rgba(0,0,0,.45);background:#050816}
+#sceneHost{height:clamp(220px,40vh,420px)}
+.scenehead{position:absolute;left:0;right:0;top:0;padding:14px 18px 40px;background:linear-gradient(180deg,rgba(3,6,18,.75),rgba(3,6,18,0));pointer-events:none;transition:opacity .3s}
+.scenehead.hide{opacity:0}
+.kicker{font-size:.82rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc0ff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.scenehead h2{font-size:clamp(1.4rem,3.4vw,2.1rem);margin-top:2px;text-shadow:0 2px 14px rgba(0,0,0,.8)}
+.hypobadge{position:absolute;right:14px;top:14px;background:rgba(255,200,87,.92);color:#2a1d00;font-weight:800;font-size:.8rem;padding:5px 10px;border-radius:999px}
+.scenetext{font-size:1.08rem;color:#d7dcf5;margin:12px 4px 12px;animation:fade .5s both}
+.condnote{margin:0 0 12px;padding:12px 16px;border-radius:14px;background:rgba(94,200,255,.1);border:1px solid rgba(94,200,255,.35);color:#cdeeff;animation:fade .5s both}
+.hyponote{margin:0 0 12px;padding:12px 16px;border-radius:14px;background:rgba(255,200,87,.1);border:1px solid rgba(255,200,87,.35);color:#ffe7b0}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.opt{position:relative;text-align:left;background:linear-gradient(160deg,rgba(30,42,84,.9),rgba(14,20,44,.9));border:2px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px;
+  transition:transform .15s,border-color .2s,box-shadow .2s;animation:rise .5s both;overflow:hidden}
+.opt:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,0%),rgba(122,162,255,.18),transparent 60%);opacity:0;transition:opacity .3s;pointer-events:none}
+.opt:hover:not(:disabled){border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 30px rgba(122,162,255,.25)}
+.opt:hover:not(:disabled):before{opacity:1}
+.opt:active:not(:disabled){transform:scale(.98)}
+.opt:disabled{opacity:.42}
+.opt .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.opt .lab{font-size:1.18rem;font-weight:800}
+.opt .desc{color:var(--muted);font-size:.97rem;flex:1}
+.pbar{height:16px;border-radius:999px;background:rgba(255,93,108,.3);overflow:hidden;position:relative}
+.pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;animation:grow 1s cubic-bezier(.3,.8,.3,1) both;transform-origin:left}
+.pbar i:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shine 2.4s infinite;transform:translateX(-100%)}
+@keyframes grow{from{transform:scaleX(0)}}
+@keyframes shine{60%,100%{transform:translateX(100%)}}
+.stats{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.stats .pp{font-size:1.5rem;font-weight:900}
+.stats .pp s{font-size:1rem;color:var(--muted);font-weight:600;margin-right:6px}
+.stats .pts{font-weight:800;color:var(--star)}
+.hint{font-size:.88rem;color:var(--muted)}
+.hint b{color:var(--text)}
+.nores{font-size:.85rem;color:var(--bad);font-weight:700}
+
+/* ---------- ROLL ---------- */
+.rollpanel{text-align:center;animation:rise .4s both}
+.rollpanel h3{font-size:1.6rem;margin-top:4px}
+.rollbar{position:relative;height:46px;border-radius:14px;margin:50px 4px 10px;background:linear-gradient(90deg,rgba(255,93,108,.55),rgba(255,93,108,.75))}
+.rollbar .g{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2fc283,#6ff0b6);border-radius:14px 0 0 14px;box-shadow:0 0 20px rgba(61,220,151,.4)}
+.rollbar .lbl{position:absolute;top:50%;transform:translateY(-50%);font-weight:800;font-size:.9rem;color:#05121a}
+.marker{position:absolute;top:-44px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:2}
+.marker .num{background:#fff;color:#0a1230;font-weight:900;font-size:1.3rem;border-radius:10px;padding:2px 10px;min-width:50px;box-shadow:0 0 18px rgba(255,255,255,.6)}
+.marker .stick{width:4px;height:88px;background:#fff;border-radius:2px;box-shadow:0 0 12px #fff}
+.marker.land .num{animation:pop .45s}
+.scale{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin:18px 4px 0}
+.verdict{font-size:2.2rem;font-weight:900;margin:12px 0 4px;min-height:1.2em}
+.verdict.ok{color:var(--ok);text-shadow:0 0 24px rgba(61,220,151,.6);animation:pop .5s}
+.verdict.bad{color:var(--bad);text-shadow:0 0 24px rgba(255,93,108,.6);animation:pop .5s}
+.why{color:#e3e7fb;min-height:1.4em;font-size:1.08rem}
+.explain{font-size:.95rem;color:var(--muted);margin-top:6px}
+.rollpanel .actions{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:52px}
+.rollpanel .actions .btn{animation:rise .4s both}
+
+/* ---------- END ---------- */
+.hero{text-align:center;padding:0 0 26px;overflow:hidden}
+#endHost{height:clamp(220px,40vh,420px);border-radius:22px 22px 0 0}
+.hero .inner{padding:0 20px}
+.hero h1{font-size:clamp(1.8rem,4.6vw,2.8rem);margin:16px 0 6px}
+.bigp{font-size:clamp(2.8rem,9vw,4.6rem);font-weight:900;line-height:1;margin:10px 0 4px;background:linear-gradient(90deg,#9fd0ff,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  font-variant-numeric:tabular-nums;filter:drop-shadow(0 0 20px rgba(159,208,255,.4))}
+.luck{display:inline-block;margin-top:10px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.sec{margin-top:16px;animation:rise .6s both}
+.sec h2{font-size:1.35rem;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.sec h2 .n{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#0a1230;font-size:1rem;flex:none;box-shadow:0 0 14px rgba(122,162,255,.6)}
+.lead{font-size:1.04rem;color:#d7dcf5}
+.formula{font-family:ui-monospace,Consolas,"Cascadia Mono",monospace;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0;overflow-x:auto;white-space:nowrap;font-size:.95rem}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0;font-size:1.25rem;font-weight:900}
+.chain>*{animation:pop .45s both}
+.chain .c{padding:8px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);text-align:center;line-height:1.1}
+.chain .c small{display:block;font-size:.7rem;color:var(--muted);font-weight:600;margin-top:3px}
+.chain .c.hypo{border-style:dashed;border-color:rgba(255,200,87,.6)}
+.chain .c.res{background:rgba(122,162,255,.22);border-color:var(--accent);box-shadow:0 0 20px rgba(122,162,255,.4)}
+.chain .op{color:var(--muted)}
+.cum{display:grid;gap:7px;margin-top:10px}
+.cum .r{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;font-size:.95rem}
+.cum .bar{height:20px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden}
+.cum .bar i{display:block;height:100%;background:linear-gradient(90deg,#7aa2ff,#9fd0ff);border-radius:8px;transition:width 1.2s cubic-bezier(.3,.8,.3,1);box-shadow:0 0 12px rgba(122,162,255,.5)}
+.cum .v{text-align:right;font-weight:800}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{padding:8px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:700;font-size:.85rem}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.mine td{background:rgba(122,162,255,.13)}
+tr.stg td{background:rgba(255,255,255,.035);font-weight:800;padding-top:12px}
+.tablewrap{overflow-x:auto;margin:0 -4px}
+.best{color:var(--star);font-weight:800}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:12px}
+.plan{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.plan b{display:block;font-size:1.5rem}
+.plan.me{border-color:var(--accent);box-shadow:0 0 18px rgba(122,162,255,.25)}
+.callout{margin-top:12px;padding:12px 16px;border-radius:14px;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.3)}
+.simtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.counters{display:flex;gap:10px;flex-wrap:wrap}
+.counter{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:8px 14px;min-width:120px}
+.counter small{display:block;color:var(--muted);font-size:.78rem}
+.counter b{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.chartwrap{position:relative;margin-top:12px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:16px;padding:8px}
+canvas#chart{width:100%;height:300px;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:8px 4px 0}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.fails{display:grid;gap:6px;margin-top:12px}
+.fails .r{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;font-size:.92rem}
+.fails .bar{position:relative;height:18px;border-radius:6px;background:rgba(255,255,255,.06)}
+.fails .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ff5d6c,#ff8a7a);border-radius:6px;opacity:.85;transition:width .8s}
+.fails .bar u{position:absolute;top:-3px;bottom:-3px;width:3px;background:#fff;border-radius:2px}
+.endactions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.modeswitch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.modeswitch button{padding:8px 14px;font-weight:700;font-size:.9rem;color:var(--muted)}
+.modeswitch button.sel{background:var(--accent);color:#0a1230}
+.confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:20;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (max-width:760px){
+  .steps{grid-template-columns:1fr}
+  .cum .r{grid-template-columns:100px 1fr 58px}
+  .fails .r{grid-template-columns:100px 1fr 74px}
+  .node .lbl{display:none}
+  .mode{min-width:0;width:100%}
+  canvas#chart{height:240px}
+  .panel{padding:16px}
+  .hero{padding:0 0 18px}
+  .scenehead{padding:10px 14px 30px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<!--@@VENDOR@@-->
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div id="app">
+
+  <!-- ================= INTRO ================= -->
+  <section id="intro" class="screen on">
+    <div class="intro">
+      <div class="introlang" id="introLang"></div>
+      <div id="introHost" class="host3d" aria-hidden="true"></div>
+      <h1 data-t="title"></h1>
+      <p class="sub" data-t="sub"></p>
+      <div class="steps">
+        <div class="step" data-t="s1"></div>
+        <div class="step" data-t="s2"></div>
+        <div class="step" data-t="s3"></div>
+      </div>
+      <div class="modes" role="radiogroup" data-ta="modes">
+        <button class="mode sel" data-mode="basit" role="radio" aria-checked="true" data-t="m1"></button>
+        <button class="mode" data-mode="detay" role="radio" aria-checked="false" data-t="m2"></button>
+      </div>
+      <button class="btn big pulse" id="startBtn" data-t="start"></button>
+      <div class="row" style="justify-content:center;margin-top:14px">
+        <button class="btn ghost" id="fsBtn" data-t="fs"></button>
+      </div>
+      <div class="standstats" id="standStats"></div>
+      <div class="credit" data-t="credit"></div>
+    </div>
+  </section>
+
+  <!-- ================= GAME ================= -->
+  <section id="game" class="screen">
+    <div class="hud">
+      <div class="title" data-t="hudTitle"></div>
+      <div class="res">
+        <div class="chip sh" id="chipShield">🛡️ <span class="pips" id="shPips"></span></div>
+        <div class="chip pt" id="chipPart">🔧 <span class="pips" id="ptPips"></span></div>
+        <div class="chip sc" id="chipScore">⭐ <span id="score">0</span></div>
+        <button class="iconbtn" id="soundBtn">🔊</button>
+        <button class="iconbtn" id="homeBtn">🏠</button>
+      </div>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="scenewrap">
+      <div id="sceneHost" class="host3d" aria-hidden="true"></div>
+      <div class="scenehead hide" id="sceneHead"></div>
+    </div>
+    <div id="stageBody"></div>
+  </section>
+
+  <!-- ================= END ================= -->
+  <section id="end" class="screen"></section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   OYUN VERİSİ
+   p   : başarı olasılığı (yüzde, tam sayı)
+   pts : başarı olursa kazanılan bilim puanı
+   cost: 'shield' (1 kalkan) | 'part' (1 yedek parça)
+   scene: o senaryoda çizilecek hareketli sahne
+   Son aşama (iniş) "cond": olasılıklar daha önce kaç kez kalkan
+   kullanıldığına bağlıdır  →  koşullu olasılık.
+   ===================================================================== */
+const PEN = [0, 6, 14];           // kalkan 0/1/2 kez kullanıldıysa inişte düşen puan
+const START_SHIELD = 2, START_PART = 1;
+
+const STAGES = [
+ { name:'Fırlatma', short:'Fırlatma', icon:'🚀', variants:[
+   { scene:'pad-wind', title:'Rüzgârlı Sabah',
+     text:'Fırlatma rampasında rüzgâr giderek güçleniyor. Roket hazır, kontrol merkezi senin kararını bekliyor.',
+     options:[
+      {label:'Hemen fırlat', desc:'Zamanında yola çıkarsın. Mars tam istediğin konumda olur.', p:85, pts:100,
+       ok:'Roket rüzgârı yararak gökyüzüne yükseldi!', fail:'Ani bir rüzgâr roketi rotadan çıkardı. Güvenlik sistemi görevi iptal etti.'},
+      {label:'Rüzgârın dinmesini bekle', desc:'Daha güvenli ama gecikirsin, yol uzar ve daha az keşif yaparsın.', p:97, pts:60,
+       ok:'Rüzgâr dindi, kusursuz bir kalkış!', fail:'Beklerken yakıt deposunda sızıntı başladı. Fırlatma iptal edildi.'},
+      {label:'Yedek parçayla kanatçıkları güçlendir', desc:'Roket rüzgâra dayanıklı olur, hemen kalkarsın. Ama tek yedek parçanı harcarsın.', p:95, pts:100, cost:'part',
+       ok:'Güçlendirilmiş kanatçıklar roketi dimdik tuttu!', fail:'Takılan parça son anda yerinden oynadı. Kalkış iptal.'}
+   ]},
+   { scene:'pad-sensor', title:'Motor Sensörü Uyarısı',
+     text:'Motorlardan birinin sıcaklık sensörü tuhaf değerler gösteriyor. Belki sadece sensör bozuk, belki de motor gerçekten ısınıyor.',
+     options:[
+      {label:'Uyarıyı yok say, fırlat', desc:'Büyük ihtimalle sensör bozuktur. Ama ya değilse?', p:80, pts:100,
+       ok:'Bozuk olan sensörmüş, motor sapasağlam çalıştı!', fail:'Motor gerçekten ısınmış! Kalkış son saniyede durduruldu.'},
+      {label:'Yedek parçayla sensörü değiştir', desc:'Sorunu çözersin ama tek yedek parçanı harcarsın.', p:97, pts:100, cost:'part',
+       ok:'Yeni sensör takıldı, her şey normal. Kalkış!', fail:'Değişim sırasında bir kablo koptu. Kalkış iptal.'},
+      {label:'Fırlatmayı bir gün ertele', desc:'Mühendisler motoru kontrol eder. Güvenli ama geç kalırsın.', p:93, pts:60,
+       ok:'Motor kontrol edildi, ertesi gün sorunsuz kalkış.', fail:'Ertesi gün hava bozdu, fırlatma penceresi kaçtı.'}
+   ]},
+   { scene:'pad-storm', title:'Yaklaşan Fırtına',
+     text:'Ufukta kara fırtına bulutları var. Bir yıldırım roketin elektroniğine zarar verebilir.',
+     options:[
+      {label:'Bulutlar gelmeden fırlat', desc:'Hızlı ol! Fırtına yetişmeden havalanırsın… belki.', p:88, pts:100,
+       ok:'Fırtına daha gelmeden atmosferi geçtin!', fail:'Bir yıldırım roketin yakınına düştü, bilgisayarlar kapandı.'},
+      {label:'Fırtınanın geçmesini bekle', desc:'Güvenli ama gecikme yüzünden daha az keşif yaparsın.', p:96, pts:65,
+       ok:'Fırtına geçti, gökyüzü tertemiz. Kalkış!', fail:'Fırtına rampaya hasar verdi, görev ertelendi.'},
+      {label:'Kalkanı aç, hemen fırlat', desc:'Kalkan elektroniği yıldırımdan korur ama yıpranır. İnişte de lazım olacak!', p:95, pts:100, cost:'shield',
+       ok:'Yıldırım kalkana çarpıp söndü. Kalkış!', fail:'Yıldırım kalkanı aştı, bilgisayarlar kapandı.'}
+   ]}
+ ]},
+ { name:'Rota Seçimi', short:'Rota', icon:'🧭', variants:[
+   { scene:'space-meteor', title:'Göktaşı Bulutu',
+     text:'Önünde iki yol var. Kısa yol, eski bir kuyruklu yıldızın geride bıraktığı toz ve küçük taşlardan oluşan bir bulutun içinden geçiyor.',
+     options:[
+      {label:'Uzun ve güvenli rota', desc:'Bulutun etrafından dolaşırsın. Yol uzun, keşif az.', p:96, pts:60,
+       ok:'Uzun ama sakin bir yolculuk.', fail:'Uzun yolda bir yön bulma motoru bozuldu.'},
+      {label:'Bulutun içinden kısa rota', desc:'Daha hızlı varırsın ve buluttan örnek toplarsın.', p:70, pts:140,
+       ok:'Taşların arasından süzüldün ve harika örnekler topladın!', fail:'Bir taş güneş panelini parçaladı. Gemide enerji kalmadı.'},
+      {label:'Kısa rota + kalkanı aç', desc:'Kalkan taşları savuşturur ama yıpranır.', p:90, pts:140, cost:'shield',
+       ok:'Kalkan taşları tek tek savuşturdu!', fail:'Büyük bir taş kalkanı bile aştı.'}
+   ]},
+   { scene:'space-moon', title:'Ay\'dan Hız Al',
+     text:'Ay\'ın yanından geçerken onun çekim kuvvetini bir sapan gibi kullanıp hızlanabilirsin. Ne kadar yakından geçersen o kadar hızlanırsın, ama hata payı küçülür.',
+     options:[
+      {label:'Ay\'ı uzaktan geç', desc:'Biraz hızlanırsın, risk neredeyse yok.', p:95, pts:60,
+       ok:'Ay sana hafif bir itme verdi.', fail:'Hesaplarda küçük bir hata rotayı bozdu.'},
+      {label:'Orta mesafeden geç', desc:'İyi bir hız kazancı, makul bir risk.', p:87, pts:110,
+       ok:'Mükemmel bir sapan manevrası!', fail:'Açı biraz kaydı, gemi yanlış yöne savruldu.'},
+      {label:'Ay\'ı sıyırarak geç', desc:'Dev bir hız kazancı ve Ay\'ın harika fotoğrafları!', p:72, pts:160,
+       ok:'Ay\'ın kraterlerinin hemen üstünden uçtun. İnanılmaz!', fail:'Ay\'a fazla yaklaştın, gemi yörüngeden çıkamadı.'}
+   ]},
+   { scene:'space-fuel', title:'Yakıt Hesabı',
+     text:'Mars\'a nasıl gideceğine karar ver: yakıt tasarrufu mu, hız mı?',
+     options:[
+      {label:'Yavaş ve tasarruflu rota', desc:'Yolculuk 9 ay sürer ama yakıt bol kalır.', p:95, pts:70,
+       ok:'Uzun ama verimli bir yolculuk.', fail:'Uzun yolculukta bir vana dondu.'},
+      {label:'Hızlı rota', desc:'6 ayda varırsın ama yakıt sınırda kalır.', p:78, pts:130,
+       ok:'Mars\'a rekor sürede yaklaştın!', fail:'Yakıt hesaplananın altında kaldı. Gemi yavaşlayamadı.'},
+      {label:'Hızlı rota + yedek yakıt pompası', desc:'Yedek parçayla ekstra pompa takarsın.', p:92, pts:130, cost:'part',
+       ok:'Ekstra pompa yakıtı son damlasına kadar kullandı!', fail:'Yeni pompa tıkandı, yakıt yetmedi.'}
+   ]}
+ ]},
+ { name:'Uzay Yolculuğu', short:'Yolculuk', icon:'🌌', variants:[
+   { scene:'space-sunstorm', title:'Güneş Fırtınası!',
+     text:'Güneş\'ten devasa bir parçacık fırtınası geliyor. Bu radyasyon gemideki bilgisayarlara zarar verebilir.',
+     options:[
+      {label:'Kalkanı aç', desc:'En güvenli seçenek ama kalkan yıpranır.', p:95, pts:100, cost:'shield',
+       ok:'Kalkan fırtınayı tamamen durdurdu.', fail:'Fırtına beklenenden çok güçlüydü, kalkan yetmedi.'},
+      {label:'Su tanklarının arkasına sığın', desc:'Su radyasyonu iyi tutar. Gerçek astronotlar da bunu yapar!', p:82, pts:100,
+       ok:'Su tankları seni korudu. Akıllıca!', fail:'Radyasyon bilgisayarları bozdu.'},
+      {label:'Fırtınanın içinde ölçüm yap', desc:'Çok riskli ama bilim insanları bu veriler için can atıyor.', p:65, pts:170,
+       ok:'Fırtınanın içinden eşsiz veriler gönderdin!', fail:'Radyasyon tüm sistemleri çökertti.'}
+   ]},
+   { scene:'space-signal', title:'Gizemli Sinyal',
+     text:'Sensörler uzayın derinliklerinden tuhaf, tekrarlayan bir sinyal yakaladı. Ne olduğunu kimse bilmiyor.',
+     options:[
+      {label:'Rotana devam et', desc:'Görevden sapma. Neredeyse hiç risk yok ama keşif de yok.', p:98, pts:40,
+       ok:'Yoluna sakince devam ettin.', fail:'Beklenmedik bir arıza çıktı.'},
+      {label:'Yaklaşıp incele', desc:'Rotadan sapıp sinyalin kaynağına gidersin.', p:75, pts:160,
+       ok:'Sinyal eski bir uzay sondasından geliyormuş. Büyük keşif!', fail:'Rotaya geri dönecek yakıt kalmadı.'},
+      {label:'Yedek parçalardan sonda yap', desc:'Küçük bir sonda gönderirsin, gemi rotasında kalır.', p:92, pts:130, cost:'part',
+       ok:'Sonda sinyalin kaynağını buldu ve fotoğrafladı!', fail:'Sonda gemiye çarptı.'}
+   ]},
+   { scene:'space-micro', title:'Mikro-göktaşı Çarptı!',
+     text:'Kum tanesi büyüklüğünde bir taş gövdeye çarptı ve küçük bir delik açtı. Bölmeden hava sızıyor.',
+     options:[
+      {label:'Yedek parçayla yamala', desc:'Kalıcı ve sağlam bir tamir.', p:97, pts:100, cost:'part',
+       ok:'Delik kalıcı olarak kapandı.', fail:'Yama tutmadı, sızıntı büyüdü.'},
+      {label:'Bantla geçici tamir', desc:'Hızlı çözüm ama ne kadar dayanacağı belli değil.', p:78, pts:100,
+       ok:'Bant tuttu! Uzay bandı işe yarar.', fail:'Bant soğukta çatladı, hava kaçtı.'},
+      {label:'Hasarlı bölmeyi kapat', desc:'Güvenli ama oradaki deneyleri kaybedersin.', p:88, pts:70,
+       ok:'Bölme kapandı, gemi güvende.', fail:'Kapı tam kapanmadı.'}
+   ]},
+   { scene:'space-computer', title:'Bilgisayar Arızası',
+     text:'Yön bulma bilgisayarı aniden kapandı! Gemi yavaşça rotasından çıkıyor.',
+     options:[
+      {label:'Yedek bilgisayara geç', desc:'Eski ama güvenilir bir bilgisayar.', p:90, pts:90,
+       ok:'Yedek bilgisayar devreye girdi.', fail:'Yedek bilgisayar da açılmadı.'},
+      {label:'Yıldızlara bakarak yön bul', desc:'Eski denizciler gibi! Zor ama çok değerli bir deneyim.', p:72, pts:150,
+       ok:'Yıldızları kullanarak rotayı buldun. Usta bir kaşifsin!', fail:'Yıldızları yanlış tanıdın, rota kaydı.'},
+      {label:'Kalkan enerjisini bilgisayara aktar', desc:'Bilgisayar hemen açılır ama kalkan zayıflar.', p:97, pts:100, cost:'shield',
+       ok:'Ekstra enerjiyle bilgisayar yeniden açıldı.', fail:'Aşırı yük sigortaları attırdı.'}
+   ]}
+ ]},
+ { name:'Mars Yörüngesi', short:'Yörünge', icon:'🪐', variants:[
+   { scene:'orbit-aero', title:'Frenleme Zamanı',
+     text:'Mars\'a çok hızlı yaklaşıyorsun. Yörüngeye girmek için yavaşlaman gerek.',
+     options:[
+      {label:'Motorlarla frenle', desc:'Klasik ve güvenli yöntem, ama çok yakıt harcar.', p:92, pts:80,
+       ok:'Motorlar seni nazikçe yörüngeye oturttu.', fail:'Motorlardan biri tekledi, gemi Mars\'ı ıskaladı.'},
+      {label:'Atmosfere sürtünerek yavaşla', desc:'"Aerofren": yakıt kazanırsın ama gemi ısınır.', p:76, pts:130,
+       ok:'Mars atmosferi seni yavaşlattı, yakıt kaldı!', fail:'Gemi fazla ısındı, sistemler kapandı.'},
+      {label:'Aerofren + kalkan', desc:'Kalkan ısıya karşı korur ama yıpranır.', p:91, pts:130, cost:'shield',
+       ok:'Kalkan ısıyı tuttu, mükemmel frenleme!', fail:'Isı kalkanın sınırını aştı.'}
+   ]},
+   { scene:'orbit-dust', title:'Dev Toz Fırtınası',
+     text:'Mars\'ın büyük bölümünü kaplayan bir toz fırtınası başladı. Bu fırtınalar haftalarca sürebilir.',
+     options:[
+      {label:'Yörüngede bekle', desc:'Fırtınanın dinmesini beklersin. Güvenli ama zaman kaybı.', p:94, pts:70,
+       ok:'Fırtına dindi, Mars yeniden göründü.', fail:'Beklerken güneş panelleri yetersiz kaldı.'},
+      {label:'Fırtınanın kenarından gir', desc:'Zaman kazanırsın ama görüş kötü.', p:76, pts:140,
+       ok:'Toz bulutlarının kıyısından ustaca geçtin!', fail:'Toz sensörleri kör etti.'},
+      {label:'Kalkanla fırtınaya dal', desc:'Kalkan tozdan korur ama yıpranır.', p:88, pts:140, cost:'shield',
+       ok:'Kalkan tozu savuşturdu!', fail:'Toz kalkanı aşındırdı ve içeri sızdı.'}
+   ]},
+   { scene:'orbit-phobos', title:'Phobos Yaklaşıyor',
+     text:'Yörüngeye girerken Mars\'ın küçük uydusu Phobos\'un yakınından geçeceksin. Phobos patates şeklinde, garip bir uydu!',
+     options:[
+      {label:'Phobos\'tan uzak dur', desc:'Güvenli yörünge, sıradan bir geçiş.', p:95, pts:60,
+       ok:'Sorunsuz yörünge girişi.', fail:'Yörünge hesaplarında hata çıktı.'},
+      {label:'Phobos\'u yakından fotoğrafla', desc:'Daha önce kimsenin görmediği detaylar!', p:80, pts:140,
+       ok:'Phobos\'un muhteşem fotoğraflarını çektin!', fail:'Phobos\'un çekimi rotanı bozdu.'},
+      {label:'Yedek parçayla uzun menzilli kamera kur', desc:'Uzaktan güvenle fotoğraf çekersin. Yakın çekim kadar ayrıntılı olmaz ve yedek parçan gider.', p:94, pts:110, cost:'part',
+       ok:'Uzun menzilli kamera Phobos\'un kraterlerini net yakaladı!', fail:'Kamera kolu sıkıştı, yörünge girişi aksadı.'}
+   ]}
+ ]},
+ { name:'Mars\'a İniş', short:'İniş', icon:'🛬', cond:true, variants:[
+   { scene:'land-site', title:'İniş Bölgesini Seç',
+     text:'Son adım! Mars\'a inmeye hazırsın. Ama nereye ineceksin?',
+     options:[
+      {label:'Düz ve güvenli ova', desc:'Taş yok, tepe yok. Kolay iniş ama keşfedecek az şey var.', p:92, pts:60,
+       ok:'Yumuşacık bir iniş. Mars\'tasın!', fail:'Son anda paraşüt açılmadı.'},
+      {label:'Antik nehir deltası', desc:'Milyarlarca yıl önce burada su akıyordu! Ama kayalık bir bölge.', p:82, pts:150,
+       ok:'Eski bir nehir yatağına indin. Su izleri her yerde!', fail:'Gemi bir kayaya çarptı.'},
+      {label:'Kutup buzulları', desc:'Burada buz var! Ama zemin kaygan ve hava çok soğuk.', p:70, pts:200,
+       ok:'Kutup buzulunun üstündesin. Tarihi bir keşif!', fail:'İniş ayakları buzda kaydı.'}
+   ]},
+   { scene:'land-method', title:'İniş Yöntemini Seç',
+     text:'Mars\'ın atmosferi çok incedir, bu yüzden inmek zordur. Hangi yöntemi kullanacaksın?',
+     options:[
+      {label:'Paraşüt + roket', desc:'Klasik ve denenmiş yöntem.', p:90, pts:80,
+       ok:'Paraşüt açıldı, roketler ateşlendi, iniş tamam!', fail:'Paraşüt yırtıldı.'},
+      {label:'Paraşüt + yedek motorla roket', desc:'Yedek parçayla ekstra bir iniş motoru eklersin.', p:96, pts:80, cost:'part',
+       ok:'Yedek motor son anda devreye girdi. Kusursuz!', fail:'İki motor da tekledi.'},
+      {label:'Hava yastıklarıyla zıpla', desc:'Gemi dev balonların içinde zıplaya zıplaya durur!', p:85, pts:110,
+       ok:'Zıp, zıp, zıp… ve durdun. Mars\'tasın!', fail:'Bir balon sivri bir kayada patladı.'},
+      {label:'Gökyüzü vinci', desc:'Hassas iniş: tam istediğin bilimsel noktaya.', p:78, pts:160,
+       ok:'Vinç gemiyi tam hedefe bıraktı!', fail:'Vinç ipleri dolaştı.'}
+   ]}
+ ]}
+];
+
+/* =====================================================================
+   İNGİLİZCE ÇEVİRİLER — her seçenek: [label, desc, ok, fail]
+   Seçeneklerin sırası yukarıdaki STAGES listesiyle aynı olmalı.
+   ===================================================================== */
+const EN_STAGES = [['Launch','Launch'], ['Route Choice','Route'], ['Deep Space Journey','Journey'], ['Mars Orbit','Orbit'], ['Landing on Mars','Landing']];
+const EN_TEXT = {
+ 'pad-wind': { title:'Windy Morning', text:'The wind on the launch pad keeps getting stronger. The rocket is ready and mission control is waiting for your call.', options:[
+   ['Launch now', 'You leave on schedule, with Mars in exactly the right position.', 'The rocket cut through the wind and soared into the sky!', 'A sudden gust pushed the rocket off course. The safety system aborted the mission.'],
+   ['Wait for the wind to calm down', 'Safer, but you fall behind schedule: a longer trip and fewer discoveries.', 'The wind died down. A perfect liftoff!', 'While you waited, a fuel tank started leaking. Launch scrubbed.'],
+   ['Reinforce the fins with the spare part', 'The rocket can handle the wind and you launch right away. But you use up your only spare part.', 'The reinforced fins kept the rocket perfectly steady!', 'The new part shook loose at the last second. Launch scrubbed.'] ]},
+ 'pad-sensor': { title:'Engine Sensor Warning', text:'A temperature sensor on one of the engines is showing strange readings. Maybe only the sensor is broken, or maybe the engine really is overheating.', options:[
+   ['Ignore the warning and launch', 'The sensor is probably faulty. But what if it isn\'t?', 'It was just the sensor. The engine ran perfectly!', 'The engine really was overheating! Liftoff was stopped at the last second.'],
+   ['Replace the sensor with the spare part', 'You fix the problem, but you use up your only spare part.', 'New sensor installed, everything looks normal. Liftoff!', 'A cable snapped during the swap. Launch scrubbed.'],
+   ['Delay the launch by one day', 'Engineers inspect the engine. Safe, but you fall behind schedule.', 'The engine checked out, and the next day\'s launch went smoothly.', 'The weather turned bad the next day and the launch window closed.'] ]},
+ 'pad-storm': { title:'Approaching Storm', text:'Dark storm clouds are gathering on the horizon. A lightning strike could damage the rocket\'s electronics.', options:[
+   ['Launch before the clouds arrive', 'Hurry! You might lift off before the storm gets here… maybe.', 'You cleared the atmosphere before the storm arrived!', 'Lightning struck near the rocket and the computers shut down.'],
+   ['Wait for the storm to pass', 'Safe, but the delay means fewer discoveries.', 'The storm passed and the sky is clear. Liftoff!', 'The storm damaged the launch pad and the mission was postponed.'],
+   ['Raise the shield and launch now', 'The shield protects the electronics from lightning but wears down. You will need it for landing too!', 'Lightning hit the shield and fizzled out. Liftoff!', 'The lightning got through the shield and the computers shut down.'] ]},
+ 'space-meteor': { title:'Meteoroid Cloud', text:'There are two paths ahead. The short one goes straight through a cloud of dust and small rocks left behind by an old comet.', options:[
+   ['Long, safe route', 'You go around the cloud. A long trip with little to discover.', 'A long but peaceful journey.', 'A steering thruster failed on the long trip.'],
+   ['Short route through the cloud', 'You arrive sooner and collect samples from the cloud.', 'You slipped between the rocks and collected amazing samples!', 'A rock shattered a solar panel. The ship lost power.'],
+   ['Short route with the shield up', 'The shield deflects the rocks but wears down.', 'The shield deflected the rocks one by one!', 'A large rock broke through even the shield.'] ]},
+ 'space-moon': { title:'Moon Slingshot', text:'As you pass the Moon, you can use its gravity like a slingshot to speed up. The closer you pass, the more speed you gain, but the smaller the margin for error.', options:[
+   ['Pass far from the Moon', 'A small speed boost with almost no risk.', 'The Moon gave you a gentle push.', 'A small calculation error threw off your course.'],
+   ['Pass at medium distance', 'A good speed boost with reasonable risk.', 'A perfect slingshot maneuver!', 'The angle drifted and the ship was flung the wrong way.'],
+   ['Skim past the Moon', 'A huge speed boost and amazing photos of the Moon!', 'You flew right over the Moon\'s craters. Incredible!', 'You got too close and the ship could not escape the Moon\'s pull.'] ]},
+ 'space-fuel': { title:'Fuel Planning', text:'Decide how you will get to Mars: save fuel or save time?', options:[
+   ['Slow, fuel-efficient route', 'The trip takes 9 months, but you keep plenty of fuel.', 'A long but efficient journey.', 'A valve froze during the long trip.'],
+   ['Fast route', 'You arrive in 6 months, but fuel will be tight.', 'You reached Mars in record time!', 'Fuel ran lower than planned and the ship could not slow down.'],
+   ['Fast route plus a backup fuel pump', 'You install an extra pump using the spare part.', 'The extra pump used every last drop of fuel!', 'The new pump clogged and the fuel ran out.'] ]},
+ 'space-sunstorm': { title:'Solar Storm!', text:'A massive storm of particles is coming from the Sun. This radiation could damage the computers on board.', options:[
+   ['Raise the shield', 'The safest choice, but the shield wears down.', 'The shield completely blocked the storm.', 'The storm was stronger than expected and the shield was not enough.'],
+   ['Shelter behind the water tanks', 'Water is great at blocking radiation. Real astronauts do this too!', 'The water tanks protected you. Smart move!', 'The radiation damaged the computers.'],
+   ['Take measurements inside the storm', 'Very risky, but scientists would love this data.', 'You sent back one-of-a-kind data from inside the storm!', 'The radiation crashed every system.'] ]},
+ 'space-signal': { title:'Mysterious Signal', text:'Your sensors picked up a strange, repeating signal from deep space. Nobody knows what it is.', options:[
+   ['Stay on course', 'No detour. Almost no risk, but no discovery either.', 'You calmly continued on your way.', 'An unexpected malfunction occurred.'],
+   ['Fly closer to investigate', 'You leave your route and head for the source of the signal.', 'The signal came from an old space probe. A big discovery!', 'There was not enough fuel left to get back on course.'],
+   ['Build a probe from spare parts', 'You send out a small probe while the ship stays on course.', 'The probe found the source of the signal and photographed it!', 'The probe collided with the ship.'] ]},
+ 'space-micro': { title:'Micrometeoroid Strike!', text:'A rock the size of a grain of sand hit the hull and punched a small hole. Air is leaking from the compartment.', options:[
+   ['Patch it with the spare part', 'A permanent, solid repair.', 'The hole is sealed for good.', 'The patch did not hold and the leak got worse.'],
+   ['Quick fix with tape', 'Fast, but nobody knows how long it will hold.', 'The tape held! Space tape works.', 'The tape cracked in the cold and the air escaped.'],
+   ['Seal off the damaged compartment', 'Safe, but you lose the experiments inside.', 'The compartment is sealed and the ship is safe.', 'The hatch did not close all the way.'] ]},
+ 'space-computer': { title:'Computer Failure', text:'The navigation computer suddenly shut down! The ship is slowly drifting off course.', options:[
+   ['Switch to the backup computer', 'Old but reliable.', 'The backup computer took over.', 'The backup computer would not start either.'],
+   ['Navigate by the stars', 'Just like sailors of the past! Hard, but a valuable experience.', 'You found your course using the stars. A true explorer!', 'You misidentified the stars and drifted off course.'],
+   ['Divert shield power to the computer', 'The computer restarts right away, but the shield gets weaker.', 'The extra power brought the computer back online.', 'The overload blew the fuses.'] ]},
+ 'orbit-aero': { title:'Time to Brake', text:'You are approaching Mars very fast. You need to slow down to enter orbit.', options:[
+   ['Brake with the engines', 'The classic, safe method, but it burns a lot of fuel.', 'The engines gently placed you into orbit.', 'One engine sputtered and the ship missed Mars.'],
+   ['Slow down by skimming the atmosphere', '"Aerobraking": you save fuel, but the ship heats up.', 'The Martian atmosphere slowed you down and you saved fuel!', 'The ship overheated and its systems shut down.'],
+   ['Aerobrake with the shield', 'The shield protects against the heat but wears down.', 'The shield handled the heat. Perfect braking!', 'The heat exceeded the shield\'s limits.'] ]},
+ 'orbit-dust': { title:'Global Dust Storm', text:'A dust storm has started that covers most of Mars. Storms like this can last for weeks.', options:[
+   ['Wait in orbit', 'You wait for the storm to clear. Safe, but you lose time.', 'The storm cleared and Mars came back into view.', 'The solar panels could not make enough power while you waited.'],
+   ['Enter along the edge of the storm', 'You save time, but visibility is poor.', 'You skillfully skirted the edge of the dust clouds!', 'The dust blinded the sensors.'],
+   ['Dive into the storm with the shield', 'The shield protects you from the dust but wears down.', 'The shield brushed off the dust!', 'The dust wore through the shield and got inside.'] ]},
+ 'orbit-phobos': { title:'Phobos Approaching', text:'As you enter orbit, you will pass close to Phobos, the small moon of Mars. Phobos is a strange, potato-shaped moon!', options:[
+   ['Keep away from Phobos', 'A safe orbit and an ordinary flyby.', 'A smooth orbit insertion.', 'There was an error in the orbit calculations.'],
+   ['Fly close to photograph Phobos', 'Details nobody has ever seen before!', 'You took stunning photos of Phobos!', 'Phobos\'s gravity knocked you off course.'],
+   ['Build a long-range camera from the spare part', 'You take photos safely from far away. Less detail than a close flyby, and you use up your spare part.', 'The long-range camera captured Phobos\'s craters in sharp detail!', 'The camera arm jammed and the orbit insertion went wrong.'] ]},
+ 'land-site': { title:'Choose a Landing Site', text:'The final step! You are ready to land on Mars. But where?', options:[
+   ['Flat, safe plain', 'No rocks, no hills. An easy landing, but little to explore.', 'A soft landing. You are on Mars!', 'The parachute failed to open at the last moment.'],
+   ['Ancient river delta', 'Billions of years ago, water flowed here! But the area is rocky.', 'You landed in an ancient riverbed. Signs of water everywhere!', 'The lander hit a rock.'],
+   ['Polar ice cap', 'There is ice here! But the ground is slippery and very cold.', 'You are standing on the polar ice cap. A historic discovery!', 'The landing legs slipped on the ice.'] ]},
+ 'land-method': { title:'Choose a Landing Method', text:'The Martian atmosphere is very thin, which makes landing hard. Which method will you use?', options:[
+   ['Parachute + rockets', 'The classic, proven method.', 'The parachute opened, the rockets fired, touchdown!', 'The parachute tore.'],
+   ['Parachute + rockets with a backup engine', 'You add an extra landing engine using the spare part.', 'The backup engine kicked in at the last moment. Flawless!', 'Both engines sputtered.'],
+   ['Bounce down on airbags', 'The lander bounces inside giant balloons until it stops!', 'Bounce, bounce, bounce… and stop. You are on Mars!', 'A balloon burst on a sharp rock.'],
+   ['Sky crane', 'A precise landing right at your chosen science target.', 'The crane lowered the lander exactly on target!', 'The crane\'s cables got tangled.'] ]}
+};
+/* her seçeneğe senaryo kimliği ve sırası iliştirilir; çeviri bu ikisiyle bulunur */
+STAGES.forEach(st => st.variants.forEach(v => v.options.forEach((o,i) => { o._s = v.scene; o._i = i; })));
+const stN = k => isEN() ? EN_STAGES[k][0] : STAGES[k].name;                 /* aşama adı */
+const stS = k => isEN() ? EN_STAGES[k][1] : STAGES[k].short;                /* kısa ad */
+const vT  = v => isEN() ? EN_TEXT[v.scene].title : v.title;                 /* senaryo başlığı */
+const vX  = v => isEN() ? EN_TEXT[v.scene].text : v.text;                   /* senaryo metni */
+const oTx = (o, f) => isEN() ? EN_TEXT[o._s].options[o._i][{label:0, desc:1, ok:2, fail:3}[f]] : o[f];
+
+/* ===================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const S = { mode:'basit', sound:true };
+
+/* ---------- Dil (Türkçe / English) ----------
+   Öncelik: adresteki ?lang=en|tr  →  kayıtlı tercih  →  tarayıcı dili (Türkçe değilse İngilizce) */
+const LANG_KEY = 'ogm-lang';
+function detectLang(){
+  const q = new URLSearchParams(location.search).get('lang'); if(q==='en' || q==='tr') return q;
+  try{ const s = localStorage.getItem(LANG_KEY); if(s==='en' || s==='tr') return s; }catch(e){}
+  return /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+}
+S.lang = detectLang();
+const isEN = () => S.lang === 'en';
+const tt = (tr, en) => isEN() ? en : tr;
+const fmt = (x, d=1) => { const s = (x*100).toFixed(d).replace(/\.0+$/, ''); return isEN() ? s : s.replace('.', ','); };
+const dec = (x, d=2) => { const s = x.toFixed(d); return isEN() ? s : s.replace('.', ','); };
+const num = n => Math.round(n).toLocaleString(isEN() ? 'en-US' : 'tr-TR');
+const pc = s => isEN() ? s + '%' : '%' + s;          /* yüzde işareti: TR "%85", EN "85%" */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TAU = Math.PI*2, rnd = (a,b) => a + Math.random()*(b-a), pick = a => a[Math.floor(Math.random()*a.length)];
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x)), ease = u => u<.5 ? 2*u*u : 1-Math.pow(-2*u+2,2)/2;
+
+/* Türkçe sayı ekleri: sfx(85,'poss') → "85'i", sfx(97,'poss') → "97'si", sfx(60,'abl') → "60'tan", sfx(86,'dat') → "86'ya" */
+function sfx(n, kind){
+  n = Math.round(n);
+  const U = ['','bir','iki','üç','dört','beş','altı','yedi','sekiz','dokuz'], T = ['','on','yirmi','otuz','kırk','elli','altmış','yetmiş','seksen','doksan'];
+  const w = n===0 ? 'sıfır' : n%10 ? U[n%10] : n%100 ? T[(n%100)/10] : n%1000 ? 'yüz' : 'bin';
+  const lv = [...w].reverse().find(c => 'aeıioöuü'.includes(c)), endsV = 'aeıioöuü'.includes(w.slice(-1));
+  const back = 'aıou'.includes(lv);
+  let s;
+  if(kind==='poss') s = (endsV?'s':'') + ({a:'ı',ı:'ı',e:'i',i:'i',o:'u',u:'u',ö:'ü',ü:'ü'})[lv];
+  else if(kind==='abl') s = ('fsştçkph'.includes(w.slice(-1)) ? 't' : 'd') + (back?'an':'en');
+  else s = (endsV?'y':'') + (back?'a':'e');
+  return n + "'" + s;
+}
+
+/* --------- Ses --------- */
+let AC = null;
+function ac(){ AC = AC || new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function beep(f, d=.12, type='sine', v=.07, when=0){
+  if(!S.sound) return;
+  try{
+    const A = ac(), t = A.currentTime + when, o = A.createOscillator(), g = A.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t+d);
+    o.connect(g).connect(A.destination); o.start(t); o.stop(t+d+.03);
+  }catch(e){}
+}
+function noise(d=.6, v=.2, f=800, sweep=0, when=0){
+  if(!S.sound) return;
+  try{
+    const A = ac(), n = Math.floor(A.sampleRate*d), b = A.createBuffer(1, n, A.sampleRate), ch = b.getChannelData(0);
+    for(let i=0;i<n;i++) ch[i] = Math.random()*2-1;
+    const src = A.createBufferSource(); src.buffer = b;
+    const fl = A.createBiquadFilter(); fl.type = 'lowpass';
+    const t = A.currentTime + when; fl.frequency.setValueAtTime(f, t); if(sweep) fl.frequency.exponentialRampToValueAtTime(sweep, t+d);
+    const g = A.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t+d);
+    src.connect(fl).connect(g).connect(A.destination); src.start(t); src.stop(t+d);
+  }catch(e){}
+}
+const sndOk    = () => [523,659,784,1047].forEach((f,i)=>beep(f,.2,'triangle',.08,i*.09));
+const sndBad   = () => [220,175,131].forEach((f,i)=>beep(f,.28,'sawtooth',.045,i*.14));
+const sndTick  = () => beep(900,.03,'square',.022);
+const sndBoom  = () => { noise(1.4,.4,1200,50); beep(55,.7,'sine',.14); };
+const sndWhoosh= () => noise(1.2,.07,250,4000);
+const sndLaunch= () => noise(2.2,.16,700,120);
+const sndThunder=() => noise(1.6,.18,500,60);
+
+/* --------- Stand istatistiği (yerel) --------- */
+function loadStats(){ try{ return JSON.parse(localStorage.getItem('ogm-stats')) || {plays:0, wins:0}; }catch(e){ return {plays:0, wins:0}; } }
+function saveStats(st){ try{ localStorage.setItem('ogm-stats', JSON.stringify(st)); }catch(e){} }
+function renderStandStats(){
+  const st = loadStats(), el = $('#standStats');
+  if(!st.plays){ el.innerHTML = tt('Bu standda henüz kimse görev yapmadı. İlk komutan sen ol!', 'No one has flown a mission at this booth yet. Be the first commander!'); return; }
+  el.innerHTML = tt(`Bu standda şimdiye kadar <b>${num(st.plays)}</b> komutan görev yaptı, <b>${num(st.wins)}</b> tanesi Mars'a ulaştı (<b>${pc(fmt(st.wins/st.plays))}</b>).`,
+                    `So far <b>${num(st.plays)}</b> commander${st.plays===1?' has':'s have'} flown a mission at this booth, and <b>${num(st.wins)}</b> reached Mars (<b>${pc(fmt(st.wins/st.plays))}</b>).`)
+    + `<br><button class="linkbtn" id="resetStats">${tt('istatistiği sıfırla', 'reset stats')}</button>`;
+  $('#resetStats').onclick = () => { if(confirm(tt('Stand istatistiği sıfırlansın mı?', 'Reset the booth statistics?'))){ saveStats({plays:0,wins:0}); renderStandStats(); } };
+}
+
+
+/* --------- Olasılık yardımcıları --------- */
+const shieldsBefore = (choices, k) => choices.slice(0,k).reduce((n,ci,j)=> n + (S.variants[j].options[ci].cost==='shield'?1:0), 0);
+function effP(k, opt, usedShields){ return STAGES[k].cond ? Math.max(5, opt.p - PEN[Math.min(usedShields, PEN.length-1)]) : opt.p; }
+function planFromChoices(choices){
+  return choices.map((ci,k)=>{ const o = S.variants[k].options[ci]; return {k, ci, o, p: effP(k,o,shieldsBefore(choices,k))/100, pts:o.pts}; });
+}
+const prodP = plan => plan.reduce((a,s)=>a*s.p, 1);
+function missionEV(plan){ let c=1, e=0; for(const s of plan){ c*=s.p; e+=s.pts*c; } return e; }
+
+function allPlans(){
+  const out = [];
+  (function rec(k, sh, pt, ch){
+    if(k===STAGES.length){ out.push(ch.slice()); return; }
+    S.variants[k].options.forEach((o,i)=>{
+      if(o.cost==='shield' && sh<1) return;
+      if(o.cost==='part' && pt<1) return;
+      ch.push(i);
+      rec(k+1, sh-(o.cost==='shield'?1:0), pt-(o.cost==='part'?1:0), ch);
+      ch.pop();
+    });
+  })(0, START_SHIELD, START_PART, []);
+  return out.map(c=>{ const pl = planFromChoices(c); return {choices:c, plan:pl, P:prodP(pl), EV:missionEV(pl)}; });
+}
+
+/* --------- Oyun akışı --------- */
+function show(id){
+  $$('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
+  window.scrollTo({top:0, behavior:'instant'});
+  if(id==='intro'){ W3.attach($('#introHost')); W3.set('intro'); }
+  if(id==='game') W3.attach($('#sceneHost'));
+}
+
+function newGame(){
+  S.variants = STAGES.map(st => st.variants[Math.floor(Math.random()*st.variants.length)]);
+  S.choices = []; S.results = []; S.k = 0;
+  S.shield = START_SHIELD; S.part = START_PART; S.points = 0;
+  S.failedAt = -1; S.phase = 'real'; S.counted = false; S.busy = false;
+  $('#game').classList.remove('shake');
+  show('game'); renderHUD(); renderTrack();
+  goStage(0);
+}
+
+function goStage(k, quick){
+  S.k = k; renderTrack();
+  $('#stageBody').innerHTML = ''; $('#sceneHead').classList.add('hide');
+  const enter = () => { W3.set(S.variants[k].scene); renderStage(); };
+  if(quick) enter();
+  else W3.warp(tt(`Aşama ${k+1} / ${STAGES.length}`, `Stage ${k+1} / ${STAGES.length}`), stN(k), enter);
+}
+
+function renderHUD(){
+  const pips = (n,max) => Array.from({length:max},(_,i)=>`<span class="pip ${i<n?'':'off'}"></span>`).join('');
+  $('#shPips').innerHTML = pips(S.shield, START_SHIELD);
+  $('#ptPips').innerHTML = pips(S.part, START_PART);
+  $('#score').textContent = num(S.points);
+  $('#soundBtn').textContent = S.sound ? '🔊' : '🔇';
+}
+function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+
+function renderTrack(){
+  const n = STAGES.length, pos = i => `calc(28px + (100% - 56px) * ${i/(n+1)})`;
+  let h = `<div class="line"></div><div class="fill" style="width:calc((100% - 56px) * ${Math.min(S.k, n+1)/(n+1)})"></div>`;
+  h += `<div class="node endp e" style="left:${pos(0)}" title="${tt('Dünya','Earth')}"></div>`;
+  STAGES.forEach((st,i)=>{
+    let cls = '';
+    if(S.results[i]===true) cls='done';
+    else if(S.results[i]===false) cls='fail';
+    else if(S.results[i]==='hypo') cls='hypo';
+    if(i===S.k && S.k<n) cls += ' cur';
+    h += `<div class="node ${cls}" style="left:${pos(i+1)}" title="${esc(stN(i))}">${st.icon}<span class="lbl">${esc(stS(i))}</span></div>`;
+  });
+  h += `<div class="node endp m" style="left:${pos(n+1)}" title="Mars"></div>`;
+  h += `<div class="ship ${S.failedAt>=0?'boom':''}" style="left:${pos(S.failedAt>=0 ? S.failedAt+.5 : (S.k>=n ? n+1 : S.k+.5))}">🚀</div>`;
+  $('#track').innerHTML = h;
+}
+
+function renderStage(){
+  const k = S.k, st = STAGES[k], v = S.variants[k];
+  const used = shieldsBefore(S.choices, k);
+  const det = S.mode==='detay';
+  $('#sceneHead').innerHTML = `<div class="kicker">${tt('Aşama','Stage')} ${k+1} / ${STAGES.length} · ${esc(stN(k))}</div><h2>${esc(vT(v))}</h2>${S.phase==='hypo'?`<span class="hypobadge">🧪 ${tt('Hayali devam','What-if mode')}</span>`:''}`;
+  $('#sceneHead').classList.remove('hide');
+  let h = '';
+  if(S.phase==='hypo') h += `<div class="hyponote" style="margin-top:12px">${tt(
+      '🧪 <b>Hayali devam:</b> Gerçek görev bitti, artık zar atılmıyor. Kalan kararlarını ver; sonunda <b>tüm planının</b> matematiğini göreceğiz.',
+      '🧪 <b>What-if mode:</b> The real mission is over, so no more dice are rolled. Make your remaining decisions, and at the end we will analyze the math of your <b>complete plan</b>.')}</div>`;
+  h += `<p class="scenetext">${esc(vX(v))}</p>`;
+  if(st.cond){
+    h += used===0
+      ? `<div class="condnote">${tt('🛡️ Kalkan, atmosfere girerken gemiyi ısıdan da korur. Kalkanını <b>hiç kullanmadın</b>, bu yüzden tüm iniş şansların tam!',
+                                    '🛡️ The shield also protects the ship from heat during atmospheric entry. You <b>never used</b> your shield, so all your landing odds are at full strength!')}</div>`
+      : `<div class="condnote">${tt(`🛡️ Kalkan, atmosfere girerken gemiyi ısıdan da korur. Daha önce kalkanı <b>${used} kez</b> kullandığın için yıprandı: her seçeneğin şansı <b>${PEN[used]} puan düştü</b>.`,
+                                    `🛡️ The shield also protects the ship from heat during atmospheric entry. You used it <b>${used} time${used>1?'s':''}</b> earlier, so it is worn: every option's chance <b>dropped by ${PEN[used]} points</b>.`)}${det?` <span class="small">${tt(`Bu bir <b>koşullu olasılık</b>: P(iniş | kalkan ${used} kez kullanıldı).`, `This is a <b>conditional probability</b>: P(landing | shield used ${used} time${used>1?'s':''}).`)}</span>`:''}</div>`;
+  }
+  h += `<div class="opts">`;
+  v.options.forEach((o,i)=>{
+    const p = effP(k,o,used), lacks = (o.cost==='shield' && S.shield<1) || (o.cost==='part' && S.part<1);
+    const color = p>=90 ? 'linear-gradient(90deg,#2fc283,#6ff0b6)' : p>=78 ? 'linear-gradient(90deg,#f5b83d,#ffe08a)' : 'linear-gradient(90deg,#ff7a3d,#ffb06b)';
+    const cost = o.cost==='shield' ? `<span class="tag sh">🛡️ −1 ${tt('kalkan','shield')}</span>` : o.cost==='part' ? `<span class="tag pt">🔧 −1 ${tt('parça','part')}</span>` : '';
+    const ev = p/100*o.pts;
+    h += `<button class="opt" data-i="${i}" ${lacks?'disabled':''} style="animation-delay:${.08+i*.09}s">
+        <div class="top"><span class="lab">${esc(oTx(o,'label'))}</span>${cost}</div>
+        <div class="desc">${esc(oTx(o,'desc'))}</div>
+        <div class="pbar" role="img" aria-label="${tt(`Başarı şansı yüzde ${p}`, `Chance of success ${p} percent`)}"><i style="width:${p}%;background:${color};animation-delay:${.2+i*.09}s"></i></div>
+        <div class="stats"><span class="pp">${p!==o.p?`<s>${pc(o.p)}</s>`:''}${pc(p)}</span><span class="pts">⭐ ${o.pts} ${tt('puan','pts')}</span></div>
+        ${lacks ? `<div class="nores">${o.cost==='shield'?tt('Kalkanın kalmadı','No shields left'):tt('Yedek parçan kalmadı','No spare parts left')}</div>`
+          : det ? `<div class="hint">p = ${dec(p/100)} · ${tt('Beklenen değer','Expected value')} = ${dec(p/100)} × ${o.pts} = <b>${dec(ev,1)}</b> ${tt('puan','points')}</div>`
+                : `<div class="hint">${tt(`100 komutandan yaklaşık <b>${sfx(p,'poss')}</b> başarır`, `About <b>${p} out of 100</b> commanders succeed`)}</div>`}
+      </button>`;
+  });
+  h += `</div>`;
+  $('#stageBody').innerHTML = h;
+  $$('#stageBody .opt').forEach(b => {
+    b.onclick = () => choose(+b.dataset.i);
+    b.onpointermove = e => { const r = b.getBoundingClientRect(); b.style.setProperty('--mx', (e.clientX-r.left)+'px'); b.style.setProperty('--my', (e.clientY-r.top)+'px'); };
+  });
+}
+
+function choose(i){
+  if(S.busy || S.choices.length !== S.k) return;   // çift dokunmaya karşı
+  const k = S.k, o = S.variants[k].options[i];
+  const p = effP(k, o, shieldsBefore(S.choices, k));
+  S.choices.push(i);
+  if(o.cost==='shield'){ S.shield--; bump($('#chipShield')); W3.shield = true; beep(880,.25,'sine',.06); beep(1320,.3,'sine',.04,.08); }
+  if(o.cost==='part'){ S.part--; bump($('#chipPart')); W3.sparkle(); beep(1200,.08,'square',.03); beep(1500,.08,'square',.03,.1); }
+  W3.bags = /yastık/i.test(o.label);
+  renderHUD();
+  if(S.phase==='hypo'){
+    S.results[k] = 'hypo';
+    if(k+1 >= STAGES.length){ S.k = k+1; renderTrack(); renderEnd(); } else goStage(k+1, true);
+    return;
+  }
+  roll(k, o, p);
+}
+
+/* --------- Zar --------- */
+function roll(k, o, p){
+  S.busy = true;
+  const r = Math.random(), n = Math.floor(r*100) + 1, ok = n <= p;   // n ≤ p  ⇔  r < p/100
+  $('#stageBody').innerHTML = `<div class="panel rollpanel" style="margin-top:14px">
+      <div class="kicker">${esc(oTx(o,'label'))}</div>
+      <h3 id="rollTitle">🎲 ${tt('Zar atılıyor…','Rolling the dice…')}</h3>
+      <div class="rollbar"><div class="g" style="width:${p}%">${p>=18?`<span class="lbl" style="left:12px">${tt('BAŞARI','SUCCESS')} 1–${p}</span>`:''}</div>
+        <div class="marker" id="marker"><div class="num" id="markerNum">50</div><div class="stick"></div></div></div>
+      <div class="scale"><span>1</span><span>${tt('Başarı','Success')}: 1–${p} · ${tt('Başarısızlık','Failure')}: ${p+1}–100</span><span>100</span></div>
+      <div class="verdict" id="verdict"></div><div class="why" id="why"></div><div class="explain" id="explain"></div>
+      <div class="actions" id="rollActions"></div></div>`;
+  W3.tension = 1;
+  const marker = $('#marker'), mnum = $('#markerNum'), target = (n-.5)/100;
+  const D = 2200, t0 = performance.now(); let last = -1, lastTick = 0;
+  (function frame(t){
+    const u = Math.min(1, (t-t0)/D);
+    let x = target + .55*Math.pow(1-u,2)*Math.sin(u*16 + target*7);
+    x = clamp(x, .005, .995);
+    const shown = u>=1 ? n : Math.floor(x*100)+1;
+    marker.style.left = (u>=1 ? target : x)*100 + '%';
+    mnum.textContent = shown;
+    if(shown!==last && t-lastTick>55){ sndTick(); lastTick=t; } last = shown;
+    if(u<1) requestAnimationFrame(frame); else { marker.classList.add('land'); rollDone(k, o, p, n, ok); }
+  })(t0);
+}
+
+function rollDone(k, o, p, n, ok){
+  S.results[k] = ok;
+  W3.play(ok ? 'success' : 'fail');
+  $('#rollTitle').textContent = `🎲 ${tt('Çıkan sayı','You rolled')}: ${n}`;
+  const v = $('#verdict');
+  v.textContent = ok ? tt('✅ BAŞARILI!','✅ SUCCESS!') : tt('❌ BAŞARISIZ','❌ FAILED');
+  v.className = 'verdict ' + (ok?'ok':'bad');
+  $('#why').textContent = oTx(o, ok ? 'ok' : 'fail');
+  $('#explain').innerHTML = ok
+    ? tt(`${n}, 1 ile ${p} arasında. Şansın %${p} idi. <b style="color:var(--star)">+${o.pts} bilim puanı</b>`,
+         `${n} is between 1 and ${p}. Your chance was ${p}%. <b style="color:var(--star)">+${o.pts} science points</b>`)
+    : tt(`${n}, ${sfx(p,'abl')} büyük. %${p} şansa rağmen olabilir: 100 komutandan yaklaşık ${sfx(100-p,'poss')} burada takılırdı.`,
+         `${n} is greater than ${p}. Even with a ${p}% chance of success this can happen: about ${100-p} out of 100 commanders would fail here.`.replace(/ a (8\d|11|18)%/, ' an $1%'));
+  if(ok){ sndOk(); S.points += o.pts; renderHUD(); bump($('#chipScore')); }
+  else { sndBad(); S.failedAt = k; setTimeout(()=>{ const gm = $('#game'); gm.classList.remove('shake'); void gm.offsetWidth; gm.classList.add('shake'); }, k===STAGES.length-1 ? 900 : 480); }
+  renderTrack();
+  const last = k === STAGES.length-1;
+  if(!ok && !last) $('#explain').innerHTML += tt(`<br><br><b>Görev burada sona erdi.</b> Ama matematiğin tamamını görmek için kalan ${STAGES.length-1-k} kararı da ver (zar atılmayacak).`,
+                                                 `<br><br><b>The mission ends here.</b> But to see the full math, make your remaining ${STAGES.length-1-k} decision${STAGES.length-1-k>1?'s':''} too (no dice will be rolled).`);
+  if(!ok || last) countGame(ok && last);
+  setTimeout(() => {
+    let a = '';
+    if(ok) a = `<button class="btn okb" id="rollNext">${last ? tt('🎉 Sonuçları gör','🎉 See the results') : tt('Devam et →','Continue →')}</button>`;
+    else if(!last) a = `<button class="btn warnb" id="rollHypo">${tt('🧪 Ya devam etseydin? Kalan kararları ver →','🧪 What if you had continued? Make your remaining decisions →')}</button>`;
+    else a = `<button class="btn" id="rollNext">${tt('Sonuçları gör →','See the results →')}</button>`;
+    $('#rollActions').innerHTML = a;
+    S.busy = false;
+    const nx = $('#rollNext'), hy = $('#rollHypo');
+    if(nx) nx.onclick = () => { if(last) { S.k = STAGES.length; renderTrack(); renderEnd(); } else goStage(k+1); };
+    if(hy) hy.onclick = () => { S.phase = 'hypo'; goStage(k+1, true); };
+    (nx||hy).focus({preventScroll:true});
+  }, ok ? (last ? 2300 : 1300) : 1500);
+}
+
+function countGame(win){
+  if(S.counted) return; S.counted = true;
+  const st = loadStats(); st.plays++; if(win) st.wins++; saveStats(st);
+}
+
+function countUp(el, to, fmtFn, dur=1400){
+  const t0 = performance.now();
+  (function f(t){ const u = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-u,3); el.textContent = fmtFn(to*e); if(u<1) requestAnimationFrame(f); })(t0);
+}
+
+/* --------- SONUÇ EKRANI --------- */
+function renderEnd(){
+  const det = S.mode==='detay';
+  const plan = planFromChoices(S.choices);
+  const P = prodP(plan), EV = missionEV(plan);
+  const win = S.failedAt<0;
+  const plans = allPlans();
+  const safest = plans.reduce((a,b)=> b.P>a.P ? b : a);
+  const richest = plans.reduce((a,b)=> b.EV>a.EV ? b : a);
+  const per100 = Math.round(P*100);
+  /* görev erken bittiyse, sonraki aşamaların kararları "Ya devam etseydin?" bölümünde zar atılmadan verilen hayali kararlardır */
+  const isHypo = k => S.failedAt >= 0 && k > S.failedAt;
+  const nHypo = S.failedAt >= 0 ? STAGES.length - 1 - S.failedAt : 0;
+  const usedLand = shieldsBefore(S.choices, STAGES.length-1);
+  const mark = k => isHypo(k) ? '🧪 ' : '👉 ';
+  let luck;
+  if(win && P<.35) luck = tt(`🍀 <b>Çok şanslıydın!</b> Bu kararlarla 100 komutandan sadece ${sfx(per100,'poss')} Mars'a ulaşır.`, `🍀 <b>You were very lucky!</b> With these decisions, only about ${per100} out of 100 commanders reach Mars.`);
+  else if(win && P<.6) luck = tt(`🍀 <b>Biraz şans da yardım etti.</b> Bu kararlarla 100 komutandan yaklaşık ${sfx(per100,'poss')} başarır.`, `🍀 <b>A little luck helped too.</b> With these decisions, about ${per100} out of 100 commanders succeed.`);
+  else if(win) luck = tt(`🧠 <b>Akıllı kararlar!</b> Planın güvenliydi: 100 komutandan yaklaşık ${sfx(per100,'poss')} başarır.`, `🧠 <b>Smart decisions!</b> Your plan was safe: about ${per100} out of 100 commanders succeed.`);
+  else if(P>=.6) luck = tt(`🎲 <b>Şanssızlık!</b> Kararların iyiydi: 100 komutandan yaklaşık ${sfx(per100,'poss')} başarırdı. Ama zar bazen böyle gelir.`, `🎲 <b>Bad luck!</b> Your decisions were good: about ${per100} out of 100 commanders would succeed. But sometimes the dice just don't cooperate.`);
+  else luck = tt(`🎲 Planın riskliydi: 100 komutandan yaklaşık ${sfx(per100,'poss')} başarırdı. Başarısız olmak hiç de şaşırtıcı değildi!`, `🎲 Your plan was risky: only about ${per100} out of 100 commanders would succeed. Failing was not surprising at all!`);
+
+  /* hero */
+  let h = `<div class="hud"><div class="title">${tt('Uzay Görevi: Olasılık Macerası','Space Mission: A Probability Adventure')}</div>
+      <div class="row">${langSwitchHTML()}<div class="modeswitch" role="group" aria-label="${tt('Anlatım seviyesi','Explanation level')}">
+        <button data-m="basit" class="${!det?'sel':''}">${tt('🧒 Kaşif','🧒 Explorer')}</button><button data-m="detay" class="${det?'sel':''}">${tt('🧑‍🔬 Bilim insanı','🧑‍🔬 Scientist')}</button></div>
+        <button class="iconbtn" id="homeBtn2" aria-label="${tt('Başa dön','Back to start')}">🏠</button></div></div>
+    <div class="panel hero" style="padding-top:0">
+      <div id="endHost" class="host3d" aria-hidden="true"></div>
+      <div class="inner">
+      <h1>${win ? tt('🎉 Mars\'a ulaştın, Komutan!','🎉 You made it to Mars, Commander!') : tt(`💥 Görev ${S.failedAt+1}. aşamada sona erdi`, `💥 The mission ended at stage ${S.failedAt+1}`)}</h1>
+      <div class="muted">${win ? `${tt('Topladığın bilim puanı','Science points collected')}: <b style="color:var(--star)">⭐ ${num(S.points)}</b>`
+                              : `${tt(`${esc(stN(S.failedAt))} aşamasında şans yüzüne gülmedi.`, `Luck was not on your side during the ${esc(stN(S.failedAt))} stage.`)} ${tt('Toplanan puan','Points collected')}: <b style="color:var(--star)">⭐ ${num(S.points)}</b>`}</div>
+      <div style="margin-top:18px" class="muted">${nHypo ? tt('Tamamladığın planla görevin başarı şansı','Chance of success for your completed plan') : tt('Senin kararlarınla görevin başarı şansı','Chance of success with your decisions')}</div>
+      <div class="bigp" id="bigP">${pc(0)}</div>
+      <div class="luck">${luck}</div>
+      </div>
+    </div>`;
+  if(nHypo) h += `<div class="panel sec hyponote" style="margin-top:16px">${tt(
+      `🧪 <b>Görev ${S.failedAt+1}. aşamada bitti</b>, ama sonraki ${nHypo} aşamanın kararlarını “Ya devam etseydin?” bölümünde <b>zar atılmadan</b> sen verdin.
+      Aşağıdaki bütün hesaplar, gerçek kararlarınla bu hayali kararlarının birleştiği <b>tam plan</b> üzerinden yapılıyor.
+      Tablolarda 👉 gerçek kararlarını, 🧪 görev bittikten sonra verdiğin hayali kararları gösterir.`,
+      `🧪 <b>The mission ended at stage ${S.failedAt+1}</b>, but you made the decisions for the remaining ${nHypo} stage${nHypo>1?'s':''} in the “What if you had continued?” section, <b>without rolling the dice</b>.
+      All the calculations below use your <b>complete plan</b>: your real decisions combined with these hypothetical ones.
+      In the tables, 👉 marks your real decisions and 🧪 marks the hypothetical decisions you made after the mission ended.`)}</div>`;
+
+  /* 1 · Çarpım kuralı */
+  let chain = '', cum = '', c = 1, di = 0;
+  plan.forEach((s,i)=>{
+    const lastK = i === STAGES.length-1, condLbl = lastK && usedLand ? ` · 🛡️×${usedLand}` : '';
+    chain += `${i?`<span class="op" style="animation-delay:${(di++)*.12}s">×</span>`:''}<span class="c${isHypo(i)?' hypo':''}" style="animation-delay:${(di++)*.12}s">${pc(Math.round(s.p*100))}<small>${isHypo(i)?'🧪 ':''}${stS(i)}${condLbl}</small></span>`;
+    c *= s.p;
+    cum += `<div class="r"><span>${STAGES[i].icon} ${tt(`${stS(i)} sonrası`, `After ${stS(i).toLowerCase()}`)}${isHypo(i)?' 🧪':''}</span><div class="bar"><i style="width:0" data-w="${c*100}"></i></div><span class="v">${pc(fmt(c))}</span></div>`;
+  });
+  chain += `<span class="op" style="animation-delay:${(di++)*.12}s">=</span><span class="c res" style="animation-delay:${(di++)*.12}s">${pc(fmt(P))}<small>${tt('Görev','Mission')}</small></span>`;
+  const p0 = plan[0].p, p1 = plan[1].p, pL = plan[STAGES.length-1];
+  const factor = (s,i) => i === STAGES.length-1 ? tt(`P(İniş | kalkan ${usedLand} kez)=${dec(s.p)}`, `P(Landing | shield used ${usedLand}×)=${dec(s.p)}`) : dec(s.p);
+  h += `<div class="panel sec"><h2><span class="n">1</span>${tt('Şanslar neden çarpılır?','Why do the chances multiply?')}</h2>
+    <p class="lead">${det
+      ? tt(`Görevin başarılı olması için <b>bütün</b> aşamaların başarılı olması gerekir. Böyle “hepsi birden” olaylarda olasılıklar <b>çarpılır</b>: <b>P(A ve B) = P(A) · P(B | A)</b>.
+         İlk dört aşamanın şansı önceki aşamalardan etkilenmez; onlarda P(B | A) = P(B) olduğu için şanslar olduğu gibi çarpılır (<b>bağımsız olaylar</b>).
+         İnişin şansı ise kalkanı kaç kez kullandığına <b>bağlıdır</b>; bu yüzden çarpıma inişin <b>koşullu</b> şansı girer (3. bölüm).`,
+           `The mission succeeds only if <b>every</b> stage succeeds. For “all of them together” events, probabilities <b>multiply</b>: <b>P(A and B) = P(A) · P(B | A)</b>.
+         The chances of the first four stages are not affected by earlier stages, so for them P(B | A) = P(B) and the chances multiply as they are (<b>independent events</b>).
+         The landing chance, however, <b>depends</b> on how many times you used the shield, so the <b>conditional</b> landing chance goes into the product (section 3).`)
+      : tt(`Mars'a varmak için <b>bütün</b> aşamaları geçmen gerekiyor. Her aşama, elindeki şansın bir kısmını alıp götürür. Bu yüzden şanslar <b>çarpılır</b> ve her adımda biraz daha küçülür.
+         <br>🛡️ ${usedLand ? `Kalkanı ${usedLand} kez kullandığın için önce iniş şansını buna göre güncelledik (%${pL.o.p} → %${Math.round(pL.p*100)}), sonra bütün aşamaların şanslarını çarptık.` : `Kalkan kullansaydın, önce iniş şansını buna göre güncelleyip sonra şansları çarpacaktık. Sen kalkanı saklayarak inişte tam şansını korudun.`}`,
+           `To reach Mars, you have to pass <b>every</b> stage. Each stage takes away part of the chance you have left. That is why the chances <b>multiply</b> and get a little smaller at every step.
+         <br>🛡️ ${usedLand ? `Because you used the shield ${usedLand} time${usedLand>1?'s':''}, we first updated your landing chance (${pL.o.p}% → ${Math.round(pL.p*100)}%), then multiplied the chances of all the stages.` : `If you had used the shield, we would first update your landing chance and then multiply. By saving the shield, you kept your full landing chance.`}`)}</p>
+    <div class="chain">${chain}</div>
+    ${det ? `<div class="formula">${tt('P(görev)','P(mission)')} = ${plan.map(factor).join(' · ')} = ${dec(P,3)}</div>`
+          : `<p class="muted">${tt(`Örnek: 100 komutan yola çıksın. İlk aşamayı yaklaşık <b>${sfx(Math.round(p0*100),'poss')}</b> geçer. Onların da %${sfx(Math.round(p1*100),'poss')} ikinci aşamayı geçer: geriye yaklaşık <b>${Math.round(p0*p1*100)}</b> komutan kalır. Böyle devam eder…`,
+                                   `Example: 100 commanders set off. About <b>${Math.round(p0*100)}</b> of them pass the first stage. ${Math.round(p1*100)}% of those pass the second stage, so about <b>${Math.round(p0*p1*100)}</b> commanders are left. And so on…`)}</p>`}
+    <div class="cum"><div class="r"><span>🌍 ${tt('Başlangıç','Start')}</span><div class="bar"><i style="width:0" data-w="100"></i></div><span class="v">${pc(100)}</span></div>${cum}</div>
+  </div>`;
+
+  /* 2 · Beklenen değer */
+  let rows = '';
+  plan.forEach((s,k)=>{
+    const used = shieldsBefore(S.choices, k), v = S.variants[k];
+    const opts = v.options.map((o,i)=>({o, i, p:effP(k,o,used)/100})).map(x=>({...x, ev:x.p*x.o.pts}));
+    const maxEV = Math.max(...opts.map(x=>x.ev));
+    rows += `<tr class="stg"><td colspan="4">${STAGES[k].icon} ${k+1}. ${esc(vT(v))}${isHypo(k)?` <span class="muted small">(🧪 ${tt('hayali karar','hypothetical decision')})</span>`:''}</td></tr>`;
+    opts.forEach(x=>{
+      rows += `<tr class="${x.i===s.ci?'mine':''}"><td>${x.i===s.ci?mark(k):''}${esc(oTx(x.o,'label'))}${x.o.cost==='shield'?' 🛡️':x.o.cost==='part'?' 🔧':''}</td>
+        <td class="num">${pc(Math.round(x.p*100))}</td><td class="num">${x.o.pts}</td>
+        <td class="num ${Math.abs(x.ev-maxEV)<1e-9?'best':''}">${dec(x.ev,1)}${Math.abs(x.ev-maxEV)<1e-9?' ★':''}</td></tr>`;
+    });
+  });
+  const planSteps = ch => ch.map((ci,k)=>{ const o = S.variants[k].options[ci]; return esc(oTx(o,'label')) + (o.cost==='shield'?' 🛡️':o.cost==='part'?' 🔧':''); }).join(' → ');
+  const planCard = (title, pl, me) => `<div class="plan ${me?'me':''}"><span class="muted small">${title}</span><b>${pc(fmt(pl.P))}</b><span class="small">${tt(`başarı şansı · görev başına beklenen toplam <b>${dec(pl.EV,0)}</b> puan`, `chance of success · expected total of <b>${dec(pl.EV,0)}</b> points per mission`)}</span>${pl.choices ? `<div class="small muted" style="margin-top:6px">${planSteps(pl.choices)}</div>` : ''}</div>`;
+  const cumP = i => plan.slice(0,i+1).reduce((a,b)=>a*b.p,1);
+  h += `<div class="panel sec"><h2><span class="n">2</span>${tt('Beklenen değer: Risk almaya değer mi?','Expected value: Is the risk worth it?')}</h2>
+    <p class="lead">${det
+      ? tt(`Bir seçeneğin <b>beklenen değeri</b>, onu çok kez tekrarlasaydık seçim başına ortalama kazanacağımız puandır: <b>E = p × puan + (1 − p) × 0</b>. Tablodaki değerler <b>o aşamaya ulaştığın varsayılarak</b> hesaplanır.`,
+           `The <b>expected value</b> of an option is the average number of points we would earn per choice if we repeated it many times: <b>E = p × points + (1 − p) × 0</b>. The values in the table <b>assume you reach that stage</b>.`)
+      : tt(`<b>Beklenen değer = şans × ödül.</b> Bir seçeneği 100 kez seçseydin, her seferinde <b>ortalama</b> kaç puan kazanırdın? Örneğin %70 şansla 140 puan: ortalama 0,7 × 140 = 98 puan. Tablodaki puanlar, <b>o aşamaya ulaştığını varsayar</b>.`,
+           `<b>Expected value = chance × reward.</b> If you picked an option 100 times, how many points would you earn <b>on average</b> each time? For example, 140 points with a 70% chance: on average 0.7 × 140 = 98 points. The points in the table <b>assume you reach that stage</b>.`)}</p>
+    <div class="tablewrap"><table><thead><tr><th>${tt('Seçenek','Option')}</th><th class="num">${tt('Şans','Chance')}</th><th class="num">${tt('Puan','Points')}</th><th class="num">${tt('Bu aşamaya ulaşırsan beklenen puan','Expected points if you reach this stage')}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="small muted">${nHypo ? tt('👉 gerçek kararın · 🧪 hayali kararın','👉 your real decision · 🧪 your hypothetical decision') : tt('👉 senin kararın','👉 your decision')} · ${tt(
+      `★ <b>yalnızca o aşamanın</b> şansı ve ödülüne bakıldığında en yüksek beklenen değer. Kalkanın inişi zayıflatması gibi <b>sonraki aşamalara etkisi dahil değildir</b>; bu yüzden ★'ları toplamak her zaman en iyi planı vermez.`,
+      `★ the highest expected value when looking at <b>that stage's</b> chance and reward <b>only</b>. Effects on later stages, such as the shield weakening the landing, <b>are not included</b>, so adding up the ★s does not always give the best plan.`)}</p>
+    <h3 style="margin:16px 0 6px;font-size:1.08rem">${tt('Bütün görevin beklenen puanı','Expected points for the whole mission')}</h3>
+    <p class="lead" style="margin-top:0">${det
+      ? tt(`Başarısız olunca o ana kadar kazanılan puanlar korunur, sonrakiler gelmez. Bu yüzden her aşamanın puanı, <b>o aşamaya kadar hepsini geçme olasılığıyla</b> çarpılıp toplanır:`,
+           `When a stage fails, the points earned so far are kept and later ones are not earned. So each stage's points are multiplied by <b>the probability of passing every stage up to and including it</b>, and then added up:`)
+      : tt(`Başarısız olursan o ana kadar kazandığın puanlar sende kalır, sonrakileri kazanamazsın. Bu yüzden her aşamanın puanını, <b>o aşamaya kadar hepsini geçme şansınla</b> çarpıp topluyoruz:`,
+           `If you fail, you keep the points you have earned so far, but you cannot earn the later ones. So we multiply each stage's points by <b>your chance of passing every stage up to that one</b>, and add them up:`)}</p>
+    <div class="formula">${det ? tt('E[toplam] = p₁·r₁ + p₁p₂·r₂ + … + p₁p₂p₃p₄p₅·r₅ = ','E[total] = p₁·r₁ + p₁p₂·r₂ + … + p₁p₂p₃p₄p₅·r₅ = ') : tt('Beklenen toplam = ','Expected total = ')}${plan.map((s,i)=>`${s.pts}×${dec(cumP(i),3)}`).join(' + ')} ≈ <b>${dec(EV,1)}</b> ${tt('puan','points')}</div>
+    <div class="plans">${planCard(tt('Senin planın','Your plan'), {P, EV}, true)}${planCard(tt('En güvenli plan','Safest plan'), safest)}${planCard(tt('En yüksek beklenen puanlı plan','Highest expected-score plan'), richest)}</div>
+    <p class="small muted" style="margin-top:8px">${tt(
+      `Bu iki plan, karşına çıkan senaryolardaki <b>${num(plans.length)} olası planın hepsi tek tek denenerek</b> bulundu. Hesapta kalkan (en çok ${START_SHIELD}) ve yedek parça (en çok ${START_PART}) sınırları ile kalkanın iniş şansını düşürmesi dikkate alındı.`,
+      `These two plans were found by <b>checking all ${num(plans.length)} possible plans</b> for the scenarios you faced, one by one. The calculation respects the shield (at most ${START_SHIELD}) and spare part (at most ${START_PART}) limits, and the way the shield lowers the landing chance.`)}</p>
+    <div class="callout">💡 ${det
+      ? tt(`Tek bir aşamaya bakınca riskli seçeneğin beklenen değeri yüksek görünebilir. Ama burada başarısızlık <b>tüm görevi</b> bitiriyor ve sonraki aşamaların puanlarını da kaybettiriyor. Bu yüzden iyi bir komutan, beklenen değeri <b>tüm görev</b> için hesaplar ve riski de dikkate alır.`,
+           `Looking at a single stage, a risky option can seem to have a high expected value. But here a failure ends <b>the whole mission</b> and also costs you the points of every later stage. That is why a good commander calculates expected value for <b>the whole mission</b> and takes risk into account too.`)
+      : tt(`Bazen riskli seçenek ortalamada daha çok puan getirir. Ama dikkat! Burada bir aşamada başarısız olursan <b>bütün görev</b> biter. Akıllı komutan hem ödüle hem de riske bakar.`,
+           `Sometimes the risky option earns more points on average. But careful! Here, failing one stage ends <b>the whole mission</b>. A smart commander looks at both the reward and the risk.`)}</div>
+  </div>`;
+
+  /* 3 · Koşullu olasılık */
+  const usedL = shieldsBefore(S.choices, 4), landO = plan[4].o;
+  let crow = '';
+  for(let u=0; u<=START_SHIELD; u++){
+    const pu = Math.max(5, landO.p - PEN[u]);
+    crow += `<tr class="${u===usedL?'mine':''}"><td>${u===usedL?'👉 ':''}${u===0?tt('Hiç kullanılmadı','Never used'):tt(`${u} kez kullanıldı`, `Used ${u} time${u>1?'s':''}`)}</td><td class="num">${pc(pu)}</td>
+      <td class="num">${det?tt(`P(iniş | ${u}) = ${dec(pu/100)}`, `P(landing | ${u}) = ${dec(pu/100)}`):tt(`100 inişten ~${sfx(pu,'poss')}`, `~${pu} of 100 landings`)}</td></tr>`;
+  }
+  const usedList = S.choices.slice(0,4).map((ci,j)=>S.variants[j].options[ci].cost==='shield'?stS(j)+(isHypo(j)?` (🧪 ${tt('hayali','hypothetical')})`:''):null).filter(Boolean);
+  h += `<div class="panel sec"><h2><span class="n">3</span>${tt('Koşullu olasılık: Kalkanın gizli bedeli','Conditional probability: The hidden cost of the shield')}</h2>
+    <p class="lead">${det
+      ? tt(`Bazı olaylar birbirinden bağımsız değildir. İnişin başarı şansı, daha önce kalkanın kaç kez kullanıldığına <b>bağlıdır</b>. Buna <b>koşullu olasılık</b> denir ve <b>P(B | A)</b> diye yazılır: "A olduğu bilindiğinde B'nin olasılığı".`,
+           `Some events are not independent. The chance of a successful landing <b>depends</b> on how many times the shield was used before. This is called <b>conditional probability</b> and is written <b>P(B | A)</b>: "the probability of B, given that A happened".`)
+      : tt(`Kalkanı kullanmak o anki tehlikeden seni korudu ama kalkan yıprandı. Kalkan inişte de gemiyi ısıdan koruduğu için iniş şansı, <b>daha önce ne yaptığına bağlı</b>. Matematikçiler buna <b>koşullu olasılık</b> der.`,
+           `Using the shield protected you from the danger at that moment, but the shield wore down. Since the shield also protects the ship from heat during landing, your landing chance <b>depends on what you did before</b>. Mathematicians call this <b>conditional probability</b>.`)}</p>
+    <p>${isHypo(STAGES.length-1) ? tt('🧪 Hayali iniş kararın','🧪 Your hypothetical landing decision') : tt('Senin iniş seçimin','Your landing choice')}: <b>${esc(oTx(landO,'label'))}</b>. ${usedList.length ? tt(`Kalkanı şu aşamalarda kullandın: <b>${usedList.join(', ')}</b>.`, `You used the shield during: <b>${usedList.join(', ')}</b>.`) : tt('Kalkanı hiç kullanmadın.','You never used the shield.')}</p>
+    <div class="tablewrap"><table><thead><tr><th>${tt('Kalkan daha önce…','Shield before landing…')}</th><th class="num">${tt('İniş şansı','Landing chance')}</th><th class="num">${det?tt('Gösterim','Notation'):tt('Anlamı','Meaning')}</th></tr></thead><tbody>${crow}</tbody></table></div>
+    ${usedL>0 ? `<div class="callout">💡 ${tt(`Kalkanı ${usedL} kez kullanmak önceki aşamaları güvenli hale getirdi, ama inişteki şansını %${sfx(landO.p,'abl')} %${sfx(Math.max(5,landO.p-PEN[usedL]),'dat')} düşürdü. Her kararın bir bedeli var!`,
+                                                `Using the shield ${usedL} time${usedL>1?'s':''} made the earlier stages safer, but it lowered your landing chance from ${landO.p}% to ${Math.max(5,landO.p-PEN[usedL])}%. Every decision has a cost!`)}</div>`
+              : `<div class="callout">💡 ${tt('Kalkanı saklayarak inişte tam güç kullandın. Ama bunun bedeli, önceki aşamalarda daha az korunmaktı.','By saving the shield, you landed at full strength. The cost was having less protection in the earlier stages.')}</div>`}
+  </div>`;
+
+  /* 4 · 1000 kez oyna */
+  h += `<div class="panel sec" id="simSec"><h2><span class="n">4</span>${tt('1000 komutan aynı kararları verseydi?','What if 1,000 commanders made the same decisions?')}</h2>
+    <p class="lead">${det
+      ? tt(`Senin planını bilgisayarda 1000 kez oynatalım. Her denemede her aşama için yeni bir zar atılır. Gözlenen başarı oranını teorik olasılık %${fmt(P)} ile karşılaştıralım.`,
+           `Let's run your plan 1,000 times on the computer. Every run rolls new dice for every stage. Then we compare the observed success rate with the theoretical probability of ${fmt(P)}%.`)
+      : tt(`Bilgisayar senin kararlarınla görevi <b>1000 kez</b> oynasın. Kaç tanesi Mars'a ulaşacak? Tahminin ne? Bakalım hesapladığımız %${fmt(P)} doğru mu çıkacak!`,
+           `Let the computer fly the mission <b>1,000 times</b> with your decisions. How many will reach Mars? What's your guess? Let's see if our calculated ${fmt(P)}% turns out to be right!`)}</p>
+    <div class="simtop">
+      <button class="btn big pulse" id="simBtn">▶ ${tt('1000 görevi oynat','Fly 1,000 missions')}</button>
+      <div class="counters">
+        <div class="counter"><small>${tt('Oynanan','Flown')}</small><b id="cN">0</b></div>
+        <div class="counter"><small>${tt("Mars'a ulaşan",'Reached Mars')}</small><b id="cW" style="color:var(--ok)">0</b></div>
+        <div class="counter"><small>${tt('Gözlenen oran','Observed rate')}</small><b id="cR">–</b></div>
+        <div class="counter"><small>${tt('Teorik oran','Theoretical rate')}</small><b>${pc(fmt(P))}</b></div>
+      </div>
+    </div>
+    <div class="chartwrap"><canvas id="chart" aria-label="${tt('Başarı oranının oynanan görev sayısına göre değişimi','Success rate as the number of missions grows')}"></canvas>
+      <div class="legend"><span><i style="background:#9fd0ff"></i>${tt('Gözlenen başarı oranı','Observed success rate')}</span><span><i style="background:var(--star)"></i>${tt('Teorik olasılık','Theoretical probability')} ${pc(fmt(P))}</span><span class="muted">${tt('Yatay eksen: oynanan görev sayısı','Horizontal axis: number of missions flown')}</span></div>
+    </div>
+    <h3 style="margin-top:16px;font-size:1.05rem">${tt('Görevler nerede başarısız oldu?','Where did the missions fail?')}</h3>
+    <div class="fails" id="fails"></div>
+    <div id="simText"></div>
+  </div>`;
+
+  /* son */
+  const st = loadStats();
+  h += `<div class="panel sec center"><h2 style="justify-content:center">🧑‍🚀 ${tt('Standımızın gerçek verisi','Real data from our booth')}</h2>
+    <p class="lead">${st.plays ? tt(`Bu standda şimdiye kadar <b>${num(st.plays)}</b> komutan oynadı ve <b>${num(st.wins)}</b> tanesi Mars'a ulaştı (%${fmt(st.wins/st.plays)}). Ne kadar çok kişi oynarsa, bu oran oyuncuların ortalama kararlarının gerçek başarı şansına o kadar yaklaşır!`,
+                                    `So far <b>${num(st.plays)}</b> commander${st.plays===1?' has':'s have'} played at this booth and <b>${num(st.wins)}</b> reached Mars (${fmt(st.wins/st.plays)}%). The more people play, the closer this rate gets to the true success chance of the players' average decisions!`) : ''}</p>
+    <div class="endactions"><button class="btn big" id="againBtn">🚀 ${tt('Yeni görev','New mission')}</button><button class="btn ghost" id="homeBtn3">🏠 ${tt('Ana ekran','Start screen')}</button></div>
+  </div>`;
+
+  const firstTime = !$('#end').classList.contains('on');
+  $('#end').innerHTML = h;
+  if(firstTime) show('end');
+  W3.attach($('#endHost')); W3.set(win ? 'end-win' : 'end-fail');
+  if(firstTime) countUp($('#bigP'), P, x => pc(fmt(x))); else $('#bigP').textContent = pc(fmt(P));
+  bindLangSwitch();
+  requestAnimationFrame(()=> setTimeout(()=> $$('#end .cum i').forEach(i=> i.style.width = i.dataset.w + '%'), 150));
+  $$('#end .modeswitch button').forEach(b=> b.onclick = ()=>{ S.mode = b.dataset.m; syncModeButtons(); const y = window.scrollY; renderEnd(); window.scrollTo(0,y); });
+  $('#againBtn').onclick = newGame;
+  $('#homeBtn2').onclick = $('#homeBtn3').onclick = goHome;
+  $('#simBtn').onclick = () => runSim(plan, P);
+  drawChart([], 0, P);
+  renderFails(null, plan);
+  if(win && firstTime) confetti();
+}
+
+/* --------- 1000 görev simülasyonu --------- */
+function simulate(plan, N){
+  const wins = new Uint16Array(N+1), failAt = new Array(plan.length).fill(0); let w = 0, pts = 0;
+  for(let i=1;i<=N;i++){
+    let ok = true;
+    for(let k=0;k<plan.length;k++){
+      if(Math.random() < plan[k].p){ pts += plan[k].pts; }
+      else { failAt[k]++; ok = false; break; }
+    }
+    if(ok) w++;
+    wins[i] = w;
+  }
+  return {wins, failAt, w, avgPts: pts/N};
+}
+
+let simAnim = 0;
+function runSim(plan, P){
+  const N = 1000, R = simulate(plan, N), D = 4200, t0 = performance.now();
+  const btn = $('#simBtn'); btn.disabled = true; btn.classList.remove('pulse'); btn.textContent = tt('⏳ Oynatılıyor…','⏳ Flying…');
+  $('#simText').innerHTML = '';
+  cancelAnimationFrame(simAnim);
+  let lastShown = 0;
+  const frame = t => {
+    if(!$('#simBtn')) return;
+    const u = Math.min(1, (t-t0)/D);
+    const n = Math.max(1, Math.min(N, Math.round(Math.pow(N, u))));
+    $('#cN').textContent = num(n);
+    $('#cW').textContent = num(R.wins[n]);
+    $('#cR').textContent = pc(fmt(R.wins[n]/n));
+    drawChart(R.wins, n, P);
+    if(n!==lastShown && n<60) sndTick(); lastShown = n;
+    if(u<1) simAnim = requestAnimationFrame(frame);
+    else simDone(R, plan, P);
+  };
+  simAnim = requestAnimationFrame(frame);
+}
+
+function simDone(R, plan, P){
+  const N = 1000, obs = R.w/N, det = S.mode==='detay';
+  const btn = $('#simBtn'); btn.disabled = false; btn.textContent = tt('🔁 Tekrar oynat','🔁 Run again');
+  renderFails(R.failAt, plan);
+  const r10 = R.wins[10]/10, r100 = R.wins[100]/100, diff = Math.abs(obs-P);
+  const sd = n => Math.sqrt(P*(1-P)/n);
+  $('#simText').innerHTML = `<div class="callout" style="margin-top:14px">
+    <p>${tt(`🎯 1000 görevin <b>${num(R.w)}</b> tanesi Mars'a ulaştı: <b>%${fmt(obs)}</b>. Hesapladığımız şans <b>%${fmt(P)}</b> idi. Fark sadece <b>${fmt(diff)}</b> puan!`,
+            `🎯 <b>${num(R.w)}</b> of the 1,000 missions reached Mars: <b>${fmt(obs)}%</b>. Our calculated chance was <b>${fmt(P)}%</b>. A difference of only <b>${fmt(diff)}</b> percentage points!`)}</p>
+    <p>${tt(`İlk 10 görevde oran <b>%${fmt(r10)}</b>, ilk 100 görevde <b>%${fmt(r100)}</b>, 1000 görevde <b>%${fmt(obs)}</b> oldu.`,
+            `The rate was <b>${fmt(r10)}%</b> after the first 10 missions, <b>${fmt(r100)}%</b> after 100, and <b>${fmt(obs)}%</b> after 1,000.`)} ${det
+      ? tt(`Bu <b>Büyük Sayılar Yasası</b>'dır: deneme sayısı n arttıkça gözlenen oran teorik olasılığa yaklaşır. Tipik sapma yaklaşık √(p(1−p)/n): n = 10 için ±%${fmt(sd(10))}, n = 100 için ±%${fmt(sd(100))}, n = 1000 için ±%${fmt(sd(1000))}.`,
+           `This is the <b>Law of Large Numbers</b>: as the number of trials n grows, the observed rate approaches the theoretical probability. The typical deviation is about √(p(1−p)/n): ±${fmt(sd(10))}% for n = 10, ±${fmt(sd(100))}% for n = 100, and ±${fmt(sd(1000))}% for n = 1,000.`)
+      : tt(`Az sayıda denemede sonuç zıplayıp duruyor. Ama deneme sayısı arttıkça çizgi sarı çizgiye, yani gerçek olasılığa yaklaşıyor. Buna <b>Büyük Sayılar Yasası</b> denir.`,
+           `With only a few tries, the result jumps around. But as the number of tries grows, the line gets closer to the yellow line, the true probability. This is called the <b>Law of Large Numbers</b>.`)}</p>
+    <p>${tt(`⭐ Bir görevin ortalama puanı: simülasyonda <b>${dec(R.avgPts,1)}</b>, beklenen değer hesabında <b>${dec(missionEV(plan),1)}</b>.`,
+            `⭐ Average points per mission: <b>${dec(R.avgPts,1)}</b> in the simulation, <b>${dec(missionEV(plan),1)}</b> from the expected value calculation.`)}${det?tt(' Beklenen değer de büyük sayılar yasasıyla ortalamaya yaklaşır.',' The average also approaches the expected value, thanks to the law of large numbers.'):tt(' Yine çok yakın!',' Very close again!')}</p>
+    <p class="small muted">${tt('"Tekrar oynat"a basarsan sonuç her seferinde biraz değişir ama hep teorik değerin yakınında kalır.','If you press "Run again", the result changes a little each time, but it always stays close to the theoretical value.')}</p></div>`;
+}
+
+function renderFails(failAt, plan){
+  const N = 1000; let reach = 1, h = '';
+  plan.forEach((s,k)=>{
+    const theo = N*reach*(1-s.p); reach *= s.p;
+    const obs = failAt ? failAt[k] : null, max = N*.6;
+    h += `<div class="r"><span>${STAGES[k].icon} ${stS(k)}</span>
+      <div class="bar"><i style="width:${obs==null?0:Math.min(100,obs/max*100)}%"></i><u style="left:${Math.min(100,theo/max*100)}%" title="${tt('Beklenen','Expected')}"></u></div>
+      <span class="small">${obs==null?'–':num(obs)} <span class="muted">/ ~${num(theo)}</span></span></div>`;
+  });
+  $('#fails').innerHTML = h + `<p class="small muted" style="margin:4px 0 0">${tt(
+    'Kırmızı çubuk: simülasyonda o aşamada takılan görev sayısı · Beyaz çizgi ve "~" sayı: hesapla beklenen sayı. En uzun çubuk, planının en zayıf halkası!',
+    'Red bar: number of simulated missions that failed at that stage · White line and "~" number: the expected count from the calculation. The longest bar is the weakest link in your plan!')}</p>`;
+}
+
+function drawChart(wins, n, P){
+  const cv = $('#chart'); if(!cv) return;
+  S.lastChart = [wins, n, P];
+  const dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight;
+  if(cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const L = 46, Rm = 14, T = 12, B = 30, w = W-L-Rm, hh = H-T-B, N = 1000;
+  const X = i => L + Math.log10(i)/Math.log10(N)*w, Y = r => T + (1-r)*hh;
+  g.font = '12px system-ui, sans-serif'; g.fillStyle = '#a9b3da'; g.strokeStyle = 'rgba(150,170,255,.15)'; g.lineWidth = 1;
+  for(const r of [0,.25,.5,.75,1]){ g.beginPath(); g.moveTo(L,Y(r)); g.lineTo(L+w,Y(r)); g.stroke(); g.textAlign='right'; g.fillText(pc(r*100), L-8, Y(r)+4); }
+  g.textAlign='center';
+  for(const i of [1,10,100,1000]){ g.beginPath(); g.moveTo(X(i),T); g.lineTo(X(i),T+hh); g.stroke(); g.fillText(num(i), X(i), H-10); }
+  g.setLineDash([7,6]); g.strokeStyle = '#ffd166'; g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(L,Y(P)); g.lineTo(L+w,Y(P)); g.stroke(); g.setLineDash([]);
+  if(!n) { g.fillStyle='#a9b3da'; g.textAlign='center'; g.fillText(tt('▶ düğmesine bas ve izle','Press ▶ and watch'), L+w/2, T+hh/2 + (P>.5?40:-30)); return; }
+  const grd = g.createLinearGradient(0,T,0,T+hh); grd.addColorStop(0,'rgba(159,208,255,.25)'); grd.addColorStop(1,'rgba(159,208,255,0)');
+  g.beginPath(); g.moveTo(X(1), T+hh); for(let i=1;i<=n;i++) g.lineTo(X(i), Y(wins[i]/i)); g.lineTo(X(n), T+hh); g.closePath(); g.fillStyle = grd; g.fill();
+  g.strokeStyle = '#9fd0ff'; g.lineWidth = 2.5; g.lineJoin = 'round'; g.shadowColor = 'rgba(159,208,255,.8)'; g.shadowBlur = 8; g.beginPath();
+  for(let i=1;i<=n;i++){ const x = X(i), y = Y(wins[i]/i); i===1 ? g.moveTo(x,y) : g.lineTo(x,y); }
+  g.stroke(); g.shadowBlur = 0;
+  const ex = X(n), ey = Y(wins[n]/n);
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(ex,ey,5,0,Math.PI*2); g.fill();
+}
+
+/* --------- küçük şeyler --------- */
+function confetti(){
+  const cols = ['#7aa2ff','#ffd166','#3ddc97','#ff8fa3','#ffb48a','#5ec8ff'];
+  for(let i=0;i<90;i++){
+    const d = document.createElement('div'); d.className='confetti';
+    d.style.left = Math.random()*100+'vw'; d.style.background = cols[i%cols.length];
+    d.style.animationDuration = (2.2+Math.random()*2)+'s'; d.style.animationDelay = Math.random()*.6+'s';
+    d.style.borderRadius = Math.random()<.5?'50%':'2px';
+    document.body.appendChild(d); setTimeout(()=>d.remove(), 5200);
+  }
+}
+function syncModeButtons(){ $$('.mode').forEach(b=>{ const on=b.dataset.mode===S.mode; b.classList.toggle('sel',on); b.setAttribute('aria-checked',on); }); }
+function goHome(){ cancelAnimationFrame(simAnim); S.busy = false; renderStandStats(); show('intro'); }
+
+/* --------- Sabit metinler ve dil seçimi --------- */
+const STATIC = {
+  tr: {
+    title:'Uzay Görevi:<br>Olasılık Macerası',
+    sub:"Dünya'dan Mars'a giden bir uzay aracının <b>komutanı</b> sensin. Yol boyunca 5 kritik karar vereceksin. Her kararın başarı şansını göreceksin, ama sonucu <b>zar</b> belirleyecek!",
+    s1:'<b>1 · Seç</b><span class="muted">Her aşamada bir seçenek seç. Güvenli mi gideceksin, riskli mi?</span>',
+    s2:'<b>2 · Zar at</b><span class="muted">1–100 arası rastgele bir sayı çıkar. Şansının içinde kalırsa başarırsın.</span>',
+    s3:'<b>3 · Matematiği gör</b><span class="muted">Sonunda kararlarının arkasındaki olasılık hesaplarını keşfet.</span>',
+    m1:'<b>🧒 Kaşif modu</b><span class="muted small">Basit anlatım · her yaş için</span>',
+    m2:'<b>🧑‍🔬 Bilim insanı modu</b><span class="muted small">Formüller ve ayrıntılar · 13+ yaş</span>',
+    start:'🚀 Görevi Başlat', fs:'⛶ Tam ekran',
+    credit:'Gezegen ve yıldız haritaları: NASA (kamu malı) · 3D: three.js',
+    hudTitle:'Uzay Görevi: Olasılık Macerası',
+    doc:'Uzay Görevi: Olasılık Macerası', modes:'Anlatım seviyesi',
+    shield:'Kalkan', part:'Yedek parça', score:'Bilim puanı', sound:'Sesi aç/kapat', home:'Başa dön'
+  },
+  en: {
+    title:'Space Mission:<br>A Probability Adventure',
+    sub:'You are the <b>commander</b> of a spacecraft traveling from Earth to Mars. You will make 5 critical decisions along the way. You will see the chance of success for every choice, but the <b>dice</b> decide the outcome!',
+    s1:'<b>1 · Choose</b><span class="muted">Pick an option at each stage. Will you play it safe, or take a risk?</span>',
+    s2:'<b>2 · Roll</b><span class="muted">A random number from 1 to 100 is drawn. If it lands inside your chance, you succeed.</span>',
+    s3:'<b>3 · See the math</b><span class="muted">At the end, discover the probability behind your decisions.</span>',
+    m1:'<b>🧒 Explorer mode</b><span class="muted small">Plain language · for all ages</span>',
+    m2:'<b>🧑‍🔬 Scientist mode</b><span class="muted small">Formulas and details · ages 13+</span>',
+    start:'🚀 Start the Mission', fs:'⛶ Fullscreen',
+    credit:'Planet and star maps: NASA (public domain) · 3D: three.js',
+    hudTitle:'Space Mission: A Probability Adventure',
+    doc:'Space Mission: A Probability Adventure', modes:'Explanation level',
+    shield:'Shield', part:'Spare part', score:'Science points', sound:'Sound on/off', home:'Back to start'
+  }
+};
+function langSwitchHTML(){
+  return `<div class="langsw" role="group" aria-label="Language / Dil"><button data-lang="tr" class="${!isEN()?'sel':''}" lang="tr">Türkçe</button><button data-lang="en" class="${isEN()?'sel':''}" lang="en">English</button></div>`;
+}
+function bindLangSwitch(){ $$('.langsw button').forEach(b => b.onclick = () => setLang(b.dataset.lang)); }
+function applyStatic(){
+  const d = STATIC[S.lang];
+  document.documentElement.lang = S.lang; document.title = d.doc;
+  $$('[data-t]').forEach(el => { el.innerHTML = d[el.dataset.t]; });
+  $$('[data-ta]').forEach(el => el.setAttribute('aria-label', d[el.dataset.ta]));
+  $('#chipShield').title = d.shield; $('#chipPart').title = d.part; $('#chipScore').title = d.score;
+  $('#soundBtn').setAttribute('aria-label', d.sound); $('#homeBtn').setAttribute('aria-label', d.home);
+  $('#introLang').innerHTML = langSwitchHTML(); bindLangSwitch();
+  syncModeButtons();
+}
+function setLang(l){
+  if(l === S.lang) return;
+  S.lang = l; try{ localStorage.setItem(LANG_KEY, l); }catch(e){}
+  applyStatic(); renderStandStats();
+  if($('#end').classList.contains('on')){ const y = window.scrollY; renderEnd(); window.scrollTo(0, y); }
+  else if($('#game').classList.contains('on')){ renderTrack(); if(!S.busy && $('#stageBody .opt')) renderStage(); }
+}
+
+$$('.mode').forEach(b => b.onclick = () => { S.mode = b.dataset.mode; syncModeButtons(); });
+$('#startBtn').onclick = () => newGame();
+$('#homeBtn').onclick = () => { if(confirm(tt('Görev yarıda bırakılsın mı?','Abandon the mission?'))) goHome(); };
+$('#soundBtn').onclick = () => { S.sound = !S.sound; renderHUD(); };
+$('#fsBtn').onclick = () => { try{ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }catch(e){} };
+window.addEventListener('resize', () => { if(S.lastChart && $('#end').classList.contains('on')) drawChart(...S.lastChart); });
+
+/* Stand modu: 3 dakika dokunulmazsa ana ekrana dön */
+let idleT;
+function resetIdle(){ clearTimeout(idleT); idleT = setTimeout(()=>{ if(!$('#intro').classList.contains('on')) goHome(); }, 180000); }
+['pointerdown','keydown','scroll','touchstart'].forEach(e => window.addEventListener(e, resetIdle, {passive:true}));
+resetIdle();
+
+/* Yıldızlı arka plan + kayan yıldızlar */
+(function stars(){
+  const cv = $('#stars'), g = cv.getContext('2d'); let W, H, st = [], shoot = null, nextShoot = 3;
+  function size(){ const d = window.devicePixelRatio||1; W = innerWidth; H = innerHeight; cv.width = W*d; cv.height = H*d; g.setTransform(d,0,0,d,0,0);
+    st = Array.from({length: Math.round(W*H/5000)}, ()=>({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.4+.2, a:Math.random()*6, s:Math.random()*.02+.004, v:Math.random()*.08+.01})); }
+  let last = 0;
+  function draw(now){
+    const dt = last ? Math.min(.05,(now-last)/1000) : .016; last = now;
+    const grd = g.createRadialGradient(W*.8, H*.1, 0, W*.8, H*.1, Math.max(W,H));
+    grd.addColorStop(0,'#1d1648'); grd.addColorStop(.5,'#0a1030'); grd.addColorStop(1,'#050816');
+    g.fillStyle = grd; g.fillRect(0,0,W,H);
+    const n2 = g.createRadialGradient(W*.1, H*.85, 0, W*.1, H*.85, Math.max(W,H)*.6); n2.addColorStop(0,'rgba(255,90,160,.08)'); n2.addColorStop(1,'rgba(255,90,160,0)'); g.fillStyle = n2; g.fillRect(0,0,W,H);
+    for(const s of st){ s.a += s.s; s.x -= s.v; if(s.x<0) s.x = W;
+      g.globalAlpha = .45 + .55*Math.abs(Math.sin(s.a)); g.fillStyle = '#fff'; g.beginPath(); g.arc(s.x,s.y,s.r,0,Math.PI*2); g.fill(); }
+    g.globalAlpha = 1;
+    nextShoot -= dt;
+    if(nextShoot <= 0 && !shoot){ shoot = {x:rnd(.2,1)*W, y:rnd(0,.4)*H, vx:-rnd(500,800), vy:rnd(150,300), life:1}; nextShoot = rnd(4,9); }
+    if(shoot){ shoot.x += shoot.vx*dt; shoot.y += shoot.vy*dt; shoot.life -= dt*1.2;
+      const gr = g.createLinearGradient(shoot.x, shoot.y, shoot.x - shoot.vx*.15, shoot.y - shoot.vy*.15); gr.addColorStop(0,`rgba(255,255,255,${shoot.life})`); gr.addColorStop(1,'rgba(255,255,255,0)');
+      g.strokeStyle = gr; g.lineWidth = 2; g.beginPath(); g.moveTo(shoot.x, shoot.y); g.lineTo(shoot.x - shoot.vx*.15, shoot.y - shoot.vy*.15); g.stroke();
+      if(shoot.life <= 0) shoot = null; }
+    requestAnimationFrame(draw);
+  }
+  addEventListener('resize', size);
+  size(); requestAnimationFrame(draw);
+})();
+
+applyStatic();
+W3.attach($('#introHost')); W3.set('intro');
+renderStandStats();
+</script>
+</body>
+</html>
